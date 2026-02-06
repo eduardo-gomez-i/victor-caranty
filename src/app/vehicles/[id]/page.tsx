@@ -1,0 +1,118 @@
+import prisma from '@/lib/prisma'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import Image from 'next/image'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
+
+interface Props {
+  params: Promise<{ id: string }>
+}
+
+async function getVehicle(id: string) {
+  const vehicle = await prisma.vehicle.findUnique({
+    where: { id },
+    include: { images: true, user: { select: { name: true, phone: true } } }
+  })
+  if (!vehicle) notFound()
+  return vehicle
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const vehicle = await getVehicle(id)
+  
+  return {
+    title: `${vehicle.make} ${vehicle.model} ${vehicle.year} - $${vehicle.price}`,
+    description: `Vendo ${vehicle.make} ${vehicle.model} ${vehicle.year} con ${vehicle.mileage}km. ${vehicle.description?.substring(0, 100)}...`,
+    openGraph: {
+      images: vehicle.images.map(img => img.url)
+    }
+  }
+}
+
+export default async function VehicleDetail({ params }: Props) {
+  const { id } = await params
+  const vehicle = await getVehicle(id)
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-4 shadow-sm relative">
+              {vehicle.images[0] ? (
+                <Image
+                  src={vehicle.images[0].url}
+                  alt={`${vehicle.make} ${vehicle.model}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  Sin imagen
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {vehicle.images.slice(1).map((img) => (
+                <div key={img.id} className="relative aspect-video rounded overflow-hidden cursor-pointer hover:opacity-80 transition">
+                  <Image
+                    src={img.url}
+                    alt="Vista del vehículo"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 25vw, 12vw"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+            <h1 className="text-3xl font-bold mb-2 text-gray-900">
+              {vehicle.make} {vehicle.model} <span className="text-gray-500 font-normal text-2xl ml-2">{vehicle.year}</span>
+            </h1>
+            <p className="text-4xl font-bold text-green-600 mb-6">
+              ${Number(vehicle.price).toLocaleString()}
+            </p>
+            
+            <div className="grid grid-cols-2 gap-y-4 gap-x-8 mb-8 py-6 border-y border-gray-100">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Kilometraje</p>
+                <p className="font-semibold text-gray-900">{vehicle.mileage.toLocaleString()} km</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Ubicación</p>
+                <p className="font-semibold text-gray-900">{vehicle.location ? (vehicle.location as { city: string })?.city : 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Vendedor</p>
+                <p className="font-semibold text-gray-900">{vehicle.user.name}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Contacto</p>
+                <p className="font-semibold text-gray-900">{vehicle.user.phone || 'No disponible'}</p>
+              </div>
+            </div>
+            
+            <div className="prose max-w-none mb-8">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">Descripción</h3>
+              <p className="whitespace-pre-line text-gray-600 text-sm leading-relaxed">{vehicle.description}</p>
+            </div>
+            
+            <div>
+               <button className="w-full bg-green-600 text-white py-4 rounded-full font-bold hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                 Contactar Vendedor
+               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  )
+}
