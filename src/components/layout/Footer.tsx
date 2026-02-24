@@ -3,7 +3,7 @@ import { ShieldCheck, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPi
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-white pt-16 pb-8">
+    <footer className="bg-black text-white pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand Column */}
@@ -37,7 +37,7 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-6 text-white">Comprar</h3>
             <ul className="space-y-4 text-sm text-gray-400">
               <li><Link href="/" className="hover:text-green-400 transition-colors">Ver inventario</Link></li>
-              <li><Link href="/" className="hover:text-green-400 transition-colors">Financiamiento</Link></li>
+              <li><Link href="/publish#financiamiento" className="hover:text-green-400 transition-colors">Financiamiento</Link></li>
               <li><Link href="/" className="hover:text-green-400 transition-colors">Garantía mecánica</Link></li>
               <li><Link href="/" className="hover:text-green-400 transition-colors">Agendar cita</Link></li>
             </ul>
@@ -78,10 +78,11 @@ export default function Footer() {
           <p>&copy; {new Date().getFullYear()} Caranty-like. Todos los derechos reservados.</p>
           <div className="flex gap-6">
             <Link href="/" className="hover:text-white transition-colors">Términos y condiciones</Link>
-            <Link href="/" className="hover:text-white transition-colors">Política de privacidad</Link>
+            <Link href="/politica-de-privacidad" className="hover:text-white transition-colors">Política de privacidad</Link>
           </div>
         </div>
       </div>
     </footer>
   )
 }
+

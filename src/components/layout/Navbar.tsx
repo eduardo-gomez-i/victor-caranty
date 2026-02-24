@@ -18,7 +18,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
   const router = useRouter()
 
   return (
-    <header className={`${transparent ? 'absolute inset-x-0 top-0 z-50' : 'bg-slate-900'} py-6 transition-colors duration-200`}>
+    <header className={`${transparent ? 'absolute inset-x-0 top-0 z-50' : 'bg-black'} py-6 transition-colors duration-200`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -29,7 +29,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
             <nav className="hidden md:flex items-center gap-6 text-white/90 text-sm">
               <Link href="/publish" className="hover:text-white transition-colors">Vende tu auto</Link>
               <Link href="/" className="hover:text-white transition-colors">Compra un auto</Link>
-              <Link href="/" className="hover:text-white transition-colors">Nosotros</Link>
+              <Link href="/nosotros" className="hover:text-white transition-colors">Nosotros</Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">

@@ -23,8 +23,8 @@ export default async function Home() {
           <div className="h-full w-full bg-[url('/hero-car.jpg')] bg-cover bg-center" />
           <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/30" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
-          <div className="max-w-4xl">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16 flex justify-center">
+          <div className="max-w-4xl w-full text-center">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
               Compra y Vende aquí tu auto seminuevo
             </h1>

@@ -118,7 +118,38 @@ export default function PublishPage() {
             <p className="mt-2 text-gray-600">Completa los datos para crear tu anuncio.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-lg overflow-hidden">
+                    <section id="financiamiento" className="mb-10 rounded-2xl bg-white border border-gray-200 shadow-sm p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Financiamiento</h2>
+                <p className="mt-2 text-gray-600">
+                  Ofrece opciones de financiamiento para que mas compradores puedan adquirir tu auto.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full px-6 border-gray-300 hover:bg-gray-100"
+              >
+                Solicitar asesoria
+              </Button>
+            </div>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-gray-200 p-4 bg-gray-50">
+                <p className="text-sm text-gray-500">Enganche sugerido</p>
+                <p className="mt-1 font-semibold text-gray-900">Desde 20%</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-4 bg-gray-50">
+                <p className="text-sm text-gray-500">Plazos</p>
+                <p className="mt-1 font-semibold text-gray-900">12 a 60 meses</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-4 bg-gray-50">
+                <p className="text-sm text-gray-500">Respuesta</p>
+                <p className="mt-1 font-semibold text-gray-900">En menos de 24 horas</p>
+              </div>
+            </div>
+          </section>
+<form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-lg overflow-hidden">
             <div className="p-8 space-y-8">
               
               <VehicleTypeSelector
@@ -258,3 +289,5 @@ export default function PublishPage() {
     </div>
   )
 }
+
+
