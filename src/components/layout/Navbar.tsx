@@ -18,15 +18,15 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
   const router = useRouter()
 
   return (
-    <header className={`${transparent ? 'absolute inset-x-0 top-0 z-50' : 'bg-black'} py-6 transition-colors duration-200`}>
+    <header className={`${transparent ? 'absolute inset-x-0 top-0 z-50 bg-white' : 'bg-white'} py-6 transition-colors duration-200`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="inline-flex items-center gap-2 text-white font-bold text-xl">
+            <Link href="/" className="inline-flex items-center gap-2 text-black font-bold text-xl">
               <ShieldCheck className="h-6 w-6 text-green-500" />
               <span>Caranty-like</span>
             </Link>
-            <nav className="hidden md:flex items-center gap-6 text-white/90 text-sm">
+            <nav className="hidden md:flex items-center gap-6 text-black/90 text-sm">
               <Link href="/publish" className="hover:text-white transition-colors">Vende tu auto</Link>
               <Link href="/" className="hover:text-white transition-colors">Compra un auto</Link>
               <Link href="/nosotros" className="hover:text-white transition-colors">Nosotros</Link>
@@ -34,12 +34,12 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
           </div>
           <div className="flex items-center gap-3">
             {showSearch && (
-                <form method="GET" action="/search" className="hidden md:flex items-center bg-white rounded-full px-3 h-10 w-72">
+                <form method="GET" action="/search" className="hidden md:flex items-center rounded-full px-3 h-10 w-72">
                     <input
                       name="make"
                       defaultValue={searchDefaultValue}
                       placeholder="Busca por marca o modelo"
-                      className="flex-1 outline-none text-sm text-gray-900"
+                      className="h-12 rounded-full border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900"
                     />
                 </form>
             )}

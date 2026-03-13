@@ -3,16 +3,16 @@ import { ShieldCheck, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPi
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white pt-16 pb-8">
+    <footer className="mt-auto bg-white text-black pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand Column */}
           <div>
-            <Link href="/" className="inline-flex items-center gap-2 text-white font-bold text-xl mb-6">
+            <Link href="/" className="inline-flex items-center gap-2 text-black font-bold text-xl mb-6">
               <ShieldCheck className="h-8 w-8 text-green-500" />
-              <span>Caranty-like</span>
+              <span className="text-black">Caranty-like</span>
             </Link>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6">
+            <p className="text-black text-sm leading-relaxed mb-6">
               La forma más segura y confiable de comprar y vender tu auto seminuevo. 
               Sin riesgos, trato directo y con garantía.
             </p>
@@ -34,8 +34,8 @@ export default function Footer() {
 
           {/* Links Column 1 */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">Comprar</h3>
-            <ul className="space-y-4 text-sm text-gray-400">
+            <h3 className="text-lg font-semibold mb-6 text-black">Comprar</h3>
+            <ul className="space-y-4 text-sm text-black">
               <li><Link href="/" className="hover:text-green-400 transition-colors">Ver inventario</Link></li>
               <li><Link href="/publish#financiamiento" className="hover:text-green-400 transition-colors">Financiamiento</Link></li>
               <li><Link href="/" className="hover:text-green-400 transition-colors">Garantía mecánica</Link></li>
@@ -45,8 +45,8 @@ export default function Footer() {
 
           {/* Links Column 2 */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">Vender</h3>
-            <ul className="space-y-4 text-sm text-gray-400">
+            <h3 className="text-lg font-semibold mb-6 text-black">Vender</h3>
+            <ul className="space-y-4 text-sm text-black">
               <li><Link href="/publish" className="hover:text-green-400 transition-colors">Vende tu auto</Link></li>
               <li><Link href="/" className="hover:text-green-400 transition-colors">Guía de precios</Link></li>
               <li><Link href="/" className="hover:text-green-400 transition-colors">Preguntas frecuentes</Link></li>
@@ -56,8 +56,8 @@ export default function Footer() {
 
           {/* Contact Column */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">Contacto</h3>
-            <ul className="space-y-4 text-sm text-gray-400">
+            <h3 className="text-lg font-semibold mb-6 text-black">Contacto</h3>
+            <ul className="space-y-4 text-sm text-black">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-green-500 shrink-0" />
                 <span>Av. Reforma 123, Ciudad de México, CDMX 06600</span>

@@ -109,7 +109,7 @@ export default function PublishPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
@@ -258,7 +258,7 @@ export default function PublishPage() {
                           <X className="h-4 w-4" />
                         </button>
                         {index === 0 && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 text-center">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gray-500 text-white text-xs py-1 text-center">
                             Foto principal
                           </div>
                         )}
