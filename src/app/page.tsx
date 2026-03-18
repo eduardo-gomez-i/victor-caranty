@@ -16,15 +16,15 @@ export default async function Home() {
   })
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 min-h-screen flex flex-col">
       <section className="relative overflow-hidden">
         <Navbar transparent showSearch={true} />
         <div className="absolute inset-0 -z-10">
           <div className="h-full w-full bg-[url('/hero-car.jpg')] bg-cover bg-center" />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/30" />
+          <div className="absolute inset-0 bg-gray-500" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
-          <div className="max-w-4xl">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16 flex justify-center  bg-gray-500">
+          <div className="max-w-4xl w-full text-center">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
               Compra y Vende aquí tu auto seminuevo
             </h1>
@@ -74,7 +74,7 @@ export default async function Home() {
             </div>
           </div>
         </div>
-        <div className="relative bg-white rounded-t-[2rem]">
+        <div className="relative bg-white rounded-[2rem]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <h3 className="text-center text-gray-900 font-semibold">Selecciona un tipo de auto</h3>
             <div className="mt-6 grid grid-cols-2 md:grid-cols-7 gap-4 text-sm text-gray-700">
@@ -104,7 +104,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="bg-gray-500">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-end justify-between mb-7">
           <h2 className="text-2xl md:text-3xl font-bold">Ofertas destacadas</h2>
           <Link href="/" className="text-green-700 hover:text-green-800 font-medium">Ver todos</Link>
@@ -114,36 +115,38 @@ export default async function Home() {
           <VehicleCard key={vehicle.id} vehicle={vehicle} />
         ))}
         {vehicles.length === 0 && (
-          <div className="col-span-full text-center py-12 text-gray-500">
+          <div className="col-span-full text-center py-12 text-white">
             No hay vehículos publicados aún.
           </div>
         )}
         </div>
-      </section>
-
-      <section className="bg-gray-50">
+        </section>
+      </div>
+    <div className="bg-gray-500">
+      <section className="bg-gray-50 relative bg-white rounded-[2rem]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-center">Cómo funciona</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-black">Cómo funciona</h2>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-xs text-gray-600">1. Apártalo</p>
-              <p className="font-semibold mt-1">Reserva sin riesgo</p>
+              <p className="text-xs  text-black">1. Apártalo</p>
+              <p className="font-semibold mt-1  text-black">Reserva sin riesgo</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-xs text-gray-600">2. Conócelo</p>
-              <p className="font-semibold mt-1">Showroom seguro</p>
+              <p className="text-xs  text-black">2. Conócelo</p>
+              <p className="font-semibold mt-1  text-black">Showroom seguro</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-xs text-gray-600">3. Págalo</p>
-              <p className="font-semibold mt-1">Plataforma confiable</p>
+              <p className="text-xs  text-black">3. Págalo</p>
+              <p className="font-semibold mt-1  text-black">Plataforma confiable</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-xs text-gray-600">4. Llévatelo</p>
-              <p className="font-semibold mt-1">Entrega con revisión</p>
+              <p className="text-xs  text-black">4. Llévatelo</p>
+              <p className="font-semibold mt-1  text-black">Entrega con revisión</p>
             </div>
           </div>
         </div>
       </section>
+    </div>
       <Footer />
     </div>
   )

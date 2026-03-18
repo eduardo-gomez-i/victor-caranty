@@ -27,9 +27,10 @@ export default async function DashboardPage() {
   const vehicles = await getMyVehicles(session.user.id)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col ">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
+      <main className="w-full bg-gray-500">
+        <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Mis vehículos publicados</h1>
 
         {vehicles.length === 0 ? (
@@ -82,6 +83,7 @@ export default async function DashboardPage() {
             })}
           </div>
         )}
+        </div>
       </main>
       <Footer />
     </div>
