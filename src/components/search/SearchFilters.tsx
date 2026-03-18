@@ -1,7 +1,6 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { Car, Truck, CarFront } from 'lucide-react'
 import { VEHICLE_BRANDS } from '@/constants/vehicles'
 
 export default function SearchFilters() {

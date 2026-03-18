@@ -1,14 +1,15 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { Prisma } from '@prisma/client'
 
 interface VehicleProps {
   id: string
   make: string
   model: string
   year: number
-  price: any
+  price: number | string | Prisma.Decimal
   mileage: number
-  location: any
+  location: Record<string, unknown> | null | undefined
   images: { url: string }[]
 }
 

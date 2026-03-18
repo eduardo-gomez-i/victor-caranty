@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
+import Navbar from '@/components/layout/Navbar'
 
 import { signIn } from 'next-auth/react'
 
@@ -37,7 +38,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Navbar showSearch={false} />
+      <div className="flex-1 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <h1 className="ui-title text-2xl">Iniciar sesión</h1>
         <p className="ui-subtitle text-sm mt-1">Accede para publicar tu auto</p>
@@ -63,6 +66,7 @@ export default function LoginPage() {
             Regístrate
           </a>
         </p>
+      </div>
       </div>
     </div>
   )

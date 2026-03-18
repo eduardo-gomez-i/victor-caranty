@@ -13,7 +13,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     // Allow form POST override (_method=PATCH)
     const contentType = request.headers.get("content-type") || ""
-    let data: any = {}
+    let data: Record<string, unknown> = {}
     if (contentType.includes("application/json")) {
       data = await request.json()
     } else if (contentType.includes("application/x-www-form-urlencoded")) {
@@ -30,8 +30,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: "No autorizado" }, { status: 403 })
     }
 
+    const rawIsActive = (data as { isActive?: unknown }).isActive
     const isActive =
-      typeof data.isActive === "string" ? data.isActive === "true" : typeof data.isActive === "boolean" ? data.isActive : undefined
+      typeof rawIsActive === "string"
+        ? rawIsActive === "true"
+        : typeof rawIsActive === "boolean"
+        ? rawIsActive
+        : undefined
 
     const updated = await prisma.vehicle.update({
       where: { id },

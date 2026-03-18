@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
-import { ShieldCheck, Handshake, BadgeDollarSign, Building2, Car, Truck, CarFront } from 'lucide-react'
+import { ShieldCheck, Handshake, BadgeDollarSign, Building2, Car, Truck, CarFront, Eye, CalendarCheck } from 'lucide-react'
 import Footer from '@/components/layout/Footer'
 import Navbar from '@/components/layout/Navbar'
 import VehicleCard from '@/components/vehicles/VehicleCard'
@@ -17,40 +16,42 @@ export default async function Home() {
 
   return (
     <div className="space-y-0 min-h-screen flex flex-col">
-      <section className="relative overflow-hidden">
-        <Navbar transparent showSearch={true} />
-        <div className="absolute inset-0 -z-10">
-          <div className="h-full w-full bg-[url('/hero-car.jpg')] bg-cover bg-center" />
-          <div className="absolute inset-0 bg-gray-500" />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16 flex justify-center  bg-gray-500">
+      <div className="relative">
+        <div
+          className="absolute inset-0 -z-10 bg-cover bg-center"
+          style={{ backgroundImage: `url('/img/hero.jpg')` }}
+        />
+        <div className="absolute inset-0 -z-10 bg-black/40" />
+        <section className="relative overflow-hidden min-h-[75vh]">
+          <Navbar transparent showSearch={true} />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 min-h-[75vh] flex items-center justify-center">
           <div className="max-w-4xl w-full text-center">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
               Compra y Vende aquí tu auto seminuevo
             </h1>
             <p className="mt-2 text-lg text-white/90">Trato directo con 0% riesgo</p>
-            <form action="/search" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-5 gap-2 bg-white rounded-full p-2 shadow-lg control-light">
-              <select name="make" className="h-12 rounded-full border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
+            <form action="/search" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-5 gap-3 bg-white rounded-full p-3 shadow-lg control-light">
+              <select name="make" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
                 <option value="">Marca</option>
                 {VEHICLE_BRANDS.map((m) => (
                   <option key={m} value={m}>{m}</option>
                 ))}
               </select>
-              <select name="year" className="h-12 rounded-full border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
+              <select name="year" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
                 <option value="">Año</option>
                 {Array.from({ length: 20 }).map((_, i) => {
                   const y = new Date().getFullYear() - i
                   return <option key={y} value={y}>{y}</option>
                 })}
               </select>
-              <input name="maxMileage" type="number" min="0" placeholder="Kilometraje máximo" className="h-12 rounded-full border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900" />
-              <select name="maxPrice" className="h-12 rounded-full border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
+              <input name="maxMileage" type="number" min="0" placeholder="Kilometraje máximo" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900" />
+              <select name="maxPrice" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
                 <option value="">Presupuesto</option>
                 {[100000,150000,200000,300000,400000,500000].map((p) => (
                   <option key={p} value={p}>Hasta ${p.toLocaleString()}</option>
                 ))}
               </select>
-              <button type="submit" className="h-12 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-full transition-colors">
+              <button type="submit" className="h-14 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-full transition-colors px-6">
                 Busca un auto
               </button>
             </form>
@@ -74,80 +75,96 @@ export default async function Home() {
             </div>
           </div>
         </div>
-        <div className="relative bg-white rounded-[2rem]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h3 className="text-center text-gray-900 font-semibold">Selecciona un tipo de auto</h3>
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-7 gap-4 text-sm text-gray-700">
-              {[
-                { id: 'sedan', label: 'Sedán', icon: CarFront },
-                { id: 'coupe', label: 'Coupe', icon: Car },
-                { id: 'suv', label: 'SUV', icon: CarFront },
-                { id: 'pickup', label: 'Pickup', icon: Truck },
-                { id: 'hatchback', label: 'Hatchback', icon: CarFront },
-                { id: 'convertible', label: 'Convertible', icon: Car },
-                { id: 'minitruck', label: 'Mini Truck', icon: Truck },
-              ].map((t) => {
-                const Icon = t.icon
-                return (
-                  <Link 
-                    key={t.id} 
-                    href={`/search?type=${t.id}`}
-                    className="flex flex-col items-center gap-2 rounded-xl p-4 transition-all hover:shadow-md bg-gray-50 hover:bg-white hover:text-green-600"
-                  >
-                    <Icon className="h-8 w-8" />
-                    <span>{t.label}</span>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="bg-gray-500">
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-end justify-between mb-7">
-          <h2 className="text-2xl md:text-3xl font-bold">Ofertas destacadas</h2>
-          <Link href="/" className="text-green-700 hover:text-green-800 font-medium">Ver todos</Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {vehicles.map((vehicle) => (
-          <VehicleCard key={vehicle.id} vehicle={vehicle} />
-        ))}
-        {vehicles.length === 0 && (
-          <div className="col-span-full text-center py-12 text-white">
-            No hay vehículos publicados aún.
-          </div>
-        )}
-        </div>
         </section>
-      </div>
-    <div className="bg-gray-500">
-      <section className="bg-gray-50 relative bg-white rounded-[2rem]">
+      <section className="relative bg-white rounded-t-4xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h3 className="text-center text-gray-900 font-semibold">Selecciona un tipo de auto</h3>
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-7 gap-4 text-sm text-gray-700">
+            {[
+              { id: 'sedan', label: 'Sedán', icon: CarFront },
+              { id: 'coupe', label: 'Coupe', icon: Car },
+              { id: 'suv', label: 'SUV', icon: CarFront },
+              { id: 'pickup', label: 'Pickup', icon: Truck },
+              { id: 'hatchback', label: 'Hatchback', icon: CarFront },
+              { id: 'convertible', label: 'Convertible', icon: Car },
+              { id: 'minitruck', label: 'Mini Truck', icon: Truck },
+            ].map((t) => {
+              const Icon = t.icon
+              return (
+                <Link
+                  key={t.id}
+                  href={`/search?type=${t.id}`}
+                  className="flex flex-col items-center gap-2 rounded-xl p-4 transition-all hover:shadow-md bg-gray-50 hover:bg-white hover:text-green-600"
+                >
+                  <Icon className="h-8 w-8" />
+                  <span>{t.label}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-center text-black">Cómo funciona</h2>
+          <div className="flex items-end justify-between mb-7">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Ofertas destacadas</h2>
+            <Link href="/" className="text-green-700 hover:text-green-800 font-medium">
+              Ver todos
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {vehicles.map((vehicle) => (
+              <VehicleCard key={vehicle.id} vehicle={vehicle} />
+            ))}
+            {vehicles.length === 0 && (
+              <div className="col-span-full text-center py-12 text-gray-700">
+                No hay vehículos publicados aún.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900">Cómo funciona</h2>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-xs  text-black">1. Apártalo</p>
-              <p className="font-semibold mt-1  text-black">Reserva sin riesgo</p>
+            <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
+              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-sm">
+                <CalendarCheck className="h-6 w-6" />
+              </div>
+              <p className="mt-3 text-xs font-medium text-green-700">1. Apártalo</p>
+              <p className="mt-1 font-semibold text-gray-900">Reserva sin riesgo</p>
+              <p className="mt-2 text-sm text-gray-600">Aparta en línea y asegura tu auto.</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-xs  text-black">2. Conócelo</p>
-              <p className="font-semibold mt-1  text-black">Showroom seguro</p>
+            <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
+              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-sm">
+                <Eye className="h-6 w-6" />
+              </div>
+              <p className="mt-3 text-xs font-medium text-green-700">2. Conócelo</p>
+              <p className="mt-1 font-semibold text-gray-900">Showroom seguro</p>
+              <p className="mt-2 text-sm text-gray-600">Revísalo con especialistas antes de decidir.</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-xs  text-black">3. Págalo</p>
-              <p className="font-semibold mt-1  text-black">Plataforma confiable</p>
+            <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
+              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-sm">
+                <BadgeDollarSign className="h-6 w-6" />
+              </div>
+              <p className="mt-3 text-xs font-medium text-green-700">3. Págalo</p>
+              <p className="mt-1 font-semibold text-gray-900">Plataforma confiable</p>
+              <p className="mt-2 text-sm text-gray-600">Pago protegido sin fraudes ni riesgos.</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-xs  text-black">4. Llévatelo</p>
-              <p className="font-semibold mt-1  text-black">Entrega con revisión</p>
+            <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
+              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-sm">
+                <Car className="h-6 w-6" />
+              </div>
+              <p className="mt-3 text-xs font-medium text-green-700">4. Llévatelo</p>
+              <p className="mt-1 font-semibold text-gray-900">Entrega con revisión</p>
+              <p className="mt-2 text-sm text-gray-600">Recoge en showroom con inspección final.</p>
             </div>
           </div>
         </div>
       </section>
-    </div>
-      <Footer />
+      </div>
+      <div className="bg-white">
+        <Footer />
+      </div>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import ContactSellerForm from '@/components/vehicles/ContactSellerForm'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -104,10 +105,12 @@ export default async function VehicleDetail({ params }: Props) {
               <p className="whitespace-pre-line text-gray-600 text-sm leading-relaxed">{vehicle.description}</p>
             </div>
             
-            <div>
-               <button className="w-full bg-green-600 text-white py-4 rounded-full font-bold hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                 Contactar Vendedor
-               </button>
+            <div className="mt-2">
+               <div className="space-y-2">
+                 <h3 className="text-lg font-semibold text-gray-900">Contactar Vendedor</h3>
+                 {/* @ts-expect-error Server Component passing down id */}
+                 <ContactSellerForm vehicleId={vehicle.id} />
+               </div>
             </div>
           </div>
         </div>
