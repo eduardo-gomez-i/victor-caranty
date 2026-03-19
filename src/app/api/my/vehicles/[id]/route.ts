@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 
 export const runtime = "nodejs"
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       data = Object.fromEntries(form.entries())
     }
 
-    const id = params.id
+    const { id } = await context.params
     const existing = await prisma.vehicle.findUnique({ where: { id } })
     if (!existing) {
       return NextResponse.json({ error: "Vehículo no encontrado" }, { status: 404 })
@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
@@ -69,7 +69,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       }
     }
 
-    const id = params.id
+    const { id } = await context.params
     const existing = await prisma.vehicle.findUnique({ where: { id } })
     if (!existing) {
       return NextResponse.json({ error: "Vehículo no encontrado" }, { status: 404 })

@@ -9,7 +9,7 @@ interface VehicleProps {
   year: number
   price: number | string | Prisma.Decimal
   mileage: number
-  location: Record<string, unknown> | null | undefined
+  location: Prisma.JsonValue | null | undefined
   images: { url: string }[]
 }
 

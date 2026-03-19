@@ -108,7 +108,6 @@ export default async function VehicleDetail({ params }: Props) {
             <div className="mt-2">
                <div className="space-y-2">
                  <h3 className="text-lg font-semibold text-gray-900">Contactar Vendedor</h3>
-                 {/* @ts-expect-error Server Component passing down id */}
                  <ContactSellerForm vehicleId={vehicle.id} />
                </div>
             </div>

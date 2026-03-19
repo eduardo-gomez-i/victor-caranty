@@ -34,8 +34,10 @@ export async function GET(request: NextRequest) {
     ]
   }
   if (type) where.type = type
-  if (minPrice) where.price = { ...where.price, gte: minPrice }
-  if (maxPrice) where.price = { ...where.price, lte: maxPrice }
+  const priceFilter: { gte?: number; lte?: number } = {}
+  if (minPrice !== undefined) priceFilter.gte = minPrice
+  if (maxPrice !== undefined) priceFilter.lte = maxPrice
+  if (priceFilter.gte !== undefined || priceFilter.lte !== undefined) where.price = priceFilter
 
   const vehicles = await prisma.vehicle.findMany({
     where,

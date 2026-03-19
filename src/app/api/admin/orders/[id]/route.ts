@@ -12,7 +12,7 @@ const updateOrderSchema = z
   })
   .refine((v) => v.status !== undefined || v.adminNotes !== undefined, { message: "Nada para actualizar" })
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
@@ -22,8 +22,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: "No autorizado" }, { status: 403 })
     }
 
+    const { id } = await context.params
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         vehicle: {
           select: {
@@ -48,7 +49,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
@@ -64,8 +65,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: parsed.error.format() }, { status: 400 })
     }
 
+    const { id } = await context.params
     const updated = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: parsed.data.status,
         adminNotes: parsed.data.adminNotes === undefined ? undefined : parsed.data.adminNotes,
@@ -90,4 +92,3 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
-
