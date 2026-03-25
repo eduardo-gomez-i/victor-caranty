@@ -30,7 +30,7 @@ export default async function Home() {
               Compra y Vende aquí tu auto seminuevo
             </h1>
             <p className="mt-2 text-lg text-white/90">Trato directo con 0% riesgo</p>
-            <form action="/search" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-5 gap-3 bg-white rounded-full p-3 shadow-lg control-light">
+            <form action="/search" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-5 gap-3 bg-white rounded-3xl md:rounded-full p-3 shadow-lg control-light">
               <select name="make" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
                 <option value="">Marca</option>
                 {VEHICLE_BRANDS.map((m) => (
