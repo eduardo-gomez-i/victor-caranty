@@ -11,7 +11,7 @@ export default function Footer() {
               <div>
                 <Link href="/" className="inline-flex items-center gap-2 font-bold text-xl mb-6">
                   <ShieldCheck className="h-8 w-8 text-green-500" />
-                  <span>Caranty-like</span>
+                  <span>Easy Motores</span>
                 </Link>
                 <p className="text-white/80 text-sm leading-relaxed mb-6">
                   La forma más segura y confiable de comprar y vender tu auto seminuevo. Sin riesgos, trato directo y con garantía.
@@ -109,7 +109,7 @@ export default function Footer() {
                   </li>
                   <li className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-green-500 shrink-0" />
-                    <span>contacto@carantylike.com</span>
+                    <span>contacto@easymotores.com</span>
                   </li>
                 </ul>
               </div>
@@ -117,7 +117,7 @@ export default function Footer() {
           </div>
 
           <div className="border-t border-white/20 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/70">
-            <p>&copy; {new Date().getFullYear()} Caranty-like. Todos los derechos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} Easy Motores. Todos los derechos reservados.</p>
             <div className="flex gap-6">
               <Link href="/" className="hover:text-white transition-colors">
                 Términos y condiciones

@@ -1,10 +1,10 @@
 import prisma from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ContactSellerForm from '@/components/vehicles/ContactSellerForm'
+import VehicleImageGallery from '@/components/vehicles/VehicleImageGallery'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -37,40 +37,12 @@ export default async function VehicleDetail({ params }: Props) {
   const vehicle = await getVehicle(id)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-24">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-4 shadow-sm relative">
-              {vehicle.images[0] ? (
-                <Image
-                  src={vehicle.images[0].url}
-                  alt={`${vehicle.make} ${vehicle.model}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  Sin imagen
-                </div>
-              )}
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {vehicle.images.slice(1).map((img) => (
-                <div key={img.id} className="relative aspect-video rounded overflow-hidden cursor-pointer hover:opacity-80 transition">
-                  <Image
-                    src={img.url}
-                    alt="Vista del vehículo"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 25vw, 12vw"
-                  />
-                </div>
-              ))}
-            </div>
+            <VehicleImageGallery images={vehicle.images} alt={`${vehicle.make} ${vehicle.model}`} />
           </div>
           
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">

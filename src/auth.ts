@@ -9,7 +9,7 @@ import { Role } from "@prisma/client"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  trustHost: process.env.AUTH_TRUST_HOST === 'true',
+  trustHost: process.env.NODE_ENV !== 'production' || process.env.AUTH_TRUST_HOST === 'true',
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   providers: [
     Credentials({

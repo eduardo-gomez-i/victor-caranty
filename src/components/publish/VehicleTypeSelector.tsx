@@ -32,7 +32,7 @@ export default function VehicleTypeSelector({ value, onChange }: VehicleTypeSele
               type="button"
               onClick={() => onChange(type.id)}
               className={`
-                flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200
+                flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 cursor-pointer
                 ${isSelected 
                   ? 'border-green-600 bg-green-50 text-green-700 ring-1 ring-green-600' 
                   : 'border-gray-200 bg-white text-gray-600 hover:border-green-200 hover:bg-gray-50'

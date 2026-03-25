@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 export default auth((req) => {
   const { pathname } = req.nextUrl
-  if (pathname.startsWith('/publish') || pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/publish') || pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
     if (!req.auth) {
       const url = req.nextUrl.clone()
       url.pathname = '/login'
@@ -15,5 +15,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ['/publish', '/dashboard', '/admin'],
+  matcher: ['/publish/:path*', '/dashboard/:path*', '/admin/:path*'],
 }
