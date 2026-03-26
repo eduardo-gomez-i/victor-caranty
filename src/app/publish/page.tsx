@@ -290,11 +290,10 @@ export default function PublishPage() {
                   <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                     {images.map((url, index) => (
                       <div key={index} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
-                        <Image
+                        <img
                           src={url}
                           alt={`Preview ${index + 1}`}
-                          fill
-                          className="object-cover"
+                          className="w-full h-full object-cover"
                         />
                         <button
                           type="button"
