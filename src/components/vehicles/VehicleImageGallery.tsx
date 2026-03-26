@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Image from 'next/image'
 import { X } from 'lucide-react'
 
 type ImageItem = {
@@ -37,13 +37,10 @@ export default function VehicleImageGallery({ images, alt }: { images: ImageItem
         }`}
       >
         {active ? (
-          <Image
+          <img
             src={active}
             alt={alt}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
-            priority
+            className="w-full h-full object-cover"
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400">Sin imagen</div>
@@ -63,12 +60,10 @@ export default function VehicleImageGallery({ images, alt }: { images: ImageItem
                   isActive ? 'ring-2 ring-green-600' : 'hover:opacity-80'
                 }`}
               >
-                <Image
+                <img
                   src={img.url}
                   alt={alt}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 25vw, 12vw"
+                  className="w-full h-full object-cover"
                 />
               </button>
             )
@@ -95,7 +90,7 @@ export default function VehicleImageGallery({ images, alt }: { images: ImageItem
             >
               <X className="h-5 w-5" />
             </button>
-            <Image src={active} alt={alt} fill className="object-contain" sizes="95vw" priority />
+            <img src={active} alt={alt} className="w-full h-full object-contain" />
           </div>
         </div>
       )}

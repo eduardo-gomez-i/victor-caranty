@@ -1,5 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from 'next/link'
-import Image from 'next/image'
 import { Prisma } from '@prisma/client'
 
 interface VehicleProps {
@@ -20,12 +20,10 @@ export default function VehicleCard({ vehicle }: { vehicle: VehicleProps }) {
       <div className="border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition bg-white">
         <div className="aspect-[16/9] bg-gray-100 relative">
           {vehicle.images && vehicle.images[0] ? (
-            <Image
+            <img
               src={vehicle.images[0].url}
               alt={`${vehicle.make} ${vehicle.model}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">

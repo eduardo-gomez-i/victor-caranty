@@ -1,9 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import Navbar from "@/components/layout/Navbar"
 import Footer from "@/components/layout/Footer"
-import Image from "next/image"
 import VehicleActions from "@/components/dashboard/VehicleActions"
 
 async function getMyVehicles(userId: string) {
@@ -51,12 +51,10 @@ export default async function DashboardPage() {
                 <div key={v.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                   <div className="relative aspect-video bg-gray-100">
                     {cover ? (
-                      <Image
+                      <img
                         src={cover.url}
                         alt={`${v.make} ${v.model}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-gray-400">Sin imagen</div>
