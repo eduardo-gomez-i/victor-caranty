@@ -289,6 +289,7 @@ export default function PublishPage() {
                   <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                     {images.map((url, index) => (
                       <div key={index} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={url}
                           alt={`Preview ${index + 1}`}
