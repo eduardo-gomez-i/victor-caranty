@@ -23,9 +23,26 @@ export async function POST(request: NextRequest) {
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
     await fs.mkdir(uploadsDir, { recursive: true })
 
-    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'jpg'
-    const nameSafe = file.name.replace(/[^a-zA-Z0-9._-]/g, '')
-    const filename = `${Date.now()}-${Math.random().toString(16).slice(2)}-${nameSafe || 'image'}.${ext}`
+    const safeOriginalName = path.basename(file.name).replace(/[^a-zA-Z0-9._-]/g, '')
+    const parsed = path.parse(safeOriginalName)
+
+    const extFromName = parsed.ext ? parsed.ext.slice(1) : ''
+    const extFromMime =
+      file.type === 'image/jpeg'
+        ? 'jpg'
+        : file.type === 'image/png'
+          ? 'png'
+          : file.type === 'image/webp'
+            ? 'webp'
+            : file.type === 'image/gif'
+              ? 'gif'
+              : file.type === 'image/svg+xml'
+                ? 'svg'
+                : 'jpg'
+
+    const ext = (extFromName || extFromMime).toLowerCase()
+    const baseName = parsed.name || 'image'
+    const filename = `${Date.now()}-${Math.random().toString(16).slice(2)}-${baseName}.${ext}`
     const filepath = path.join(uploadsDir, filename)
     await fs.writeFile(filepath, buffer)
 
