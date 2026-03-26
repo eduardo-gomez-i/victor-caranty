@@ -2,23 +2,20 @@ import prisma from "@/lib/prisma"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table"
-import OrderStatusBadge from "@/components/admin/OrderStatusBadge"
 
 export default async function AdminDashboardPage() {
-  const [totalOrders, newOrders, inProgressOrders, completedOrders, canceledOrders, activeVehicles, recentOrders] =
+  const [totalVehicles, activeVehicles, pendingVehicles, totalUsers, recentVehicles] =
     await prisma.$transaction([
-      prisma.order.count(),
-      prisma.order.count({ where: { status: "NEW" } }),
-      prisma.order.count({ where: { status: "IN_PROGRESS" } }),
-      prisma.order.count({ where: { status: "COMPLETED" } }),
-      prisma.order.count({ where: { status: "CANCELED" } }),
+      prisma.vehicle.count(),
       prisma.vehicle.count({ where: { isActive: true, status: "active" } }),
-      prisma.order.findMany({
+      prisma.vehicle.count({ where: { status: "pending" } }),
+      prisma.user.count(),
+      prisma.vehicle.findMany({
         orderBy: { createdAt: "desc" },
         take: 8,
         include: {
-          vehicle: {
-            select: { id: true, make: true, model: true, year: true },
+          user: {
+            select: { name: true },
           },
         },
       }),
@@ -31,71 +28,53 @@ export default async function AdminDashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-sm text-gray-700">Resumen general de la plataforma</p>
         </div>
-        <Link href="/admin/orders" className="text-sm font-medium text-green-700 hover:text-green-800">
-          Ver pedidos
+        <Link href="/admin/vehicles" className="text-sm font-medium text-green-700 hover:text-green-800">
+          Ver vehículos
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card className="lg:col-span-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
           <CardHeader>
-            <CardTitle>Pedidos totales</CardTitle>
+            <CardTitle>Vehículos Totales</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{totalOrders}</div>
+            <div className="text-3xl font-bold text-gray-900">{totalVehicles}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Nuevos</CardTitle>
+            <CardTitle>Vehículos Activos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{newOrders}</div>
+            <div className="text-3xl font-bold text-green-600">{activeVehicles}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>En proceso</CardTitle>
+            <CardTitle>Pendientes de Aprobación</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{inProgressOrders}</div>
+            <div className="text-3xl font-bold text-yellow-600">{pendingVehicles}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Completados</CardTitle>
+            <CardTitle>Usuarios Registrados</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{completedOrders}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Cancelados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{canceledOrders}</div>
+            <div className="text-3xl font-bold text-gray-900">{totalUsers}</div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 mt-6">
         <Card>
           <CardHeader>
-            <CardTitle>Publicaciones activas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{activeVehicles}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Pedidos recientes</CardTitle>
+            <CardTitle>Vehículos recientes</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <div className="overflow-x-auto">
@@ -103,35 +82,37 @@ export default async function AdminDashboardPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Vehículo</TableHead>
-                    <TableHead>Comprador</TableHead>
+                    <TableHead>Vendedor</TableHead>
+                    <TableHead>Precio</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acción</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {recentOrders.length === 0 ? (
+                  {recentVehicles.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-gray-700">
-                        Aún no hay pedidos.
+                      <TableCell colSpan={4} className="text-gray-700 text-center py-4">
+                        Aún no hay vehículos.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    recentOrders.map((o) => (
-                      <TableRow key={o.id}>
+                    recentVehicles.map((v) => (
+                      <TableRow key={v.id}>
                         <TableCell className="font-medium text-gray-900">
-                          {o.vehicle.make} {o.vehicle.model} {o.vehicle.year}
+                          {v.make} {v.model} {v.year}
                         </TableCell>
-                        <TableCell className="text-gray-700">{o.buyerName}</TableCell>
+                        <TableCell className="text-gray-700">{v.user.name}</TableCell>
+                        <TableCell className="text-gray-700">${Number(v.price).toLocaleString()}</TableCell>
                         <TableCell>
-                          <OrderStatusBadge status={o.status} />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Link
-                            href={`/admin/orders/${o.id}`}
-                            className="text-sm font-medium text-green-700 hover:text-green-800"
-                          >
-                            Ver
-                          </Link>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            v.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            v.status === 'active' ? 'bg-green-100 text-green-800' :
+                            v.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {v.status === 'pending' ? 'Pendiente' : 
+                             v.status === 'active' ? 'Activo' : 
+                             v.status === 'rejected' ? 'Rechazado' : v.status}
+                          </span>
                         </TableCell>
                       </TableRow>
                     ))

@@ -13,6 +13,41 @@ import Footer from '@/components/layout/Footer'
 import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
 import { VEHICLE_BRANDS } from '@/constants/vehicles'
 
+const MEXICO_STATES = [
+  'Aguascalientes',
+  'Baja California',
+  'Baja California Sur',
+  'Campeche',
+  'Chiapas',
+  'Chihuahua',
+  'Ciudad de México',
+  'Coahuila',
+  'Colima',
+  'Durango',
+  'Estado de México',
+  'Guanajuato',
+  'Guerrero',
+  'Hidalgo',
+  'Jalisco',
+  'Michoacán',
+  'Morelos',
+  'Nayarit',
+  'Nuevo León',
+  'Oaxaca',
+  'Puebla',
+  'Querétaro',
+  'Quintana Roo',
+  'San Luis Potosí',
+  'Sinaloa',
+  'Sonora',
+  'Tabasco',
+  'Tamaulipas',
+  'Tlaxcala',
+  'Veracruz',
+  'Yucatán',
+  'Zacatecas',
+] as const
+
 export default function PublishPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -23,18 +58,26 @@ export default function PublishPage() {
 
   const [formData, setFormData] = useState({
     make: '',
+    customMake: '',
     model: '',
     year: '',
     mileage: '',
     price: '',
     description: '',
+    state: '',
     city: '',
     type: ''
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData(prev => {
+      const next = { ...prev, [name]: value }
+      if (name === 'make' && value !== '__other__') {
+        next.customMake = ''
+      }
+      return next
+    })
   }
 
   const handleFiles = async (files: FileList | File[]) => {
@@ -71,14 +114,23 @@ export default function PublishPage() {
     setError(null)
 
     try {
+      const make = formData.make === '__other__' ? formData.customMake.trim() : formData.make
+      if (!make) {
+        throw new Error('Ingresa la marca')
+      }
+      if (!formData.state) {
+        throw new Error('Selecciona el estado')
+      }
+
       const payload = {
-        make: formData.make,
+        make,
         model: formData.model,
         year: parseInt(formData.year),
         mileage: parseInt(formData.mileage),
         price: parseFloat(formData.price),
         description: formData.description,
         type: formData.type,
+        state: formData.state,
         location: { city: formData.city },
         images: images
       }
@@ -109,47 +161,16 @@ export default function PublishPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pt-24">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
+      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <h1 className="text-3xl font-bold text-gray-900">Publicar vehículo</h1>
             <p className="mt-2 text-gray-600">Completa los datos para crear tu anuncio.</p>
           </div>
 
-                    <section id="financiamiento" className="mb-10 rounded-2xl bg-white border border-gray-200 shadow-sm p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Financiamiento</h2>
-                <p className="mt-2 text-gray-600">
-                  Ofrece opciones de financiamiento para que mas compradores puedan adquirir tu auto.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded-full px-6 border-gray-300 hover:bg-gray-100"
-              >
-                Solicitar asesoria
-              </Button>
-            </div>
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="rounded-xl border border-gray-200 p-4 bg-gray-50">
-                <p className="text-sm text-gray-500">Enganche sugerido</p>
-                <p className="mt-1 font-semibold text-gray-900">Desde 20%</p>
-              </div>
-              <div className="rounded-xl border border-gray-200 p-4 bg-gray-50">
-                <p className="text-sm text-gray-500">Plazos</p>
-                <p className="mt-1 font-semibold text-gray-900">12 a 60 meses</p>
-              </div>
-              <div className="rounded-xl border border-gray-200 p-4 bg-gray-50">
-                <p className="text-sm text-gray-500">Respuesta</p>
-                <p className="mt-1 font-semibold text-gray-900">En menos de 24 horas</p>
-              </div>
-            </div>
-          </section>
-<form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-lg overflow-hidden">
+          <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-lg overflow-hidden">
             <div className="p-8 space-y-8">
               
               <VehicleTypeSelector
@@ -168,8 +189,22 @@ export default function PublishPage() {
                       {VEHICLE_BRANDS.map(brand => (
                         <option key={brand} value={brand}>{brand}</option>
                       ))}
+                      <option value="__other__">Otra</option>
                     </Select>
                   </div>
+                  {formData.make === '__other__' && (
+                    <div>
+                      <label htmlFor="customMake" className="block text-sm font-medium text-gray-700">Marca (otra)</label>
+                      <Input
+                        type="text"
+                        name="customMake"
+                        id="customMake"
+                        required
+                        value={formData.customMake}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  )}
                   <div>
                     <label htmlFor="model" className="block text-sm font-medium text-gray-700">Modelo</label>
                     <Input type="text" name="model" id="model" required value={formData.model} onChange={handleChange} />
@@ -189,6 +224,17 @@ export default function PublishPage() {
                   <div className="md:col-span-2">
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
                     <Textarea name="description" id="description" rows={4} value={formData.description} onChange={handleChange} />
+                  </div>
+                  <div>
+                    <label htmlFor="state" className="block text-sm font-medium text-gray-700">Estado</label>
+                    <Select name="state" id="state" required value={formData.state} onChange={handleChange}>
+                      <option value="">Selecciona estado</option>
+                      {MEXICO_STATES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </Select>
                   </div>
                   <div>
                     <label htmlFor="city" className="block text-sm font-medium text-gray-700">Ciudad</label>

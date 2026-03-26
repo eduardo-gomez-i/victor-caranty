@@ -11,6 +11,8 @@ const vehicleSchema = z.object({
   mileage: z.coerce.number().int().min(0),
   price: z.coerce.number().positive(),
   type: z.string().optional(),
+  status: z.enum(['active', 'paused', 'sold', 'pending', 'rejected']).optional(),
+  state: z.string().min(1),
   description: z.string().optional(),
   location: z.any().optional(),
   images: z.array(z.string().min(1)).optional()
@@ -62,6 +64,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validation.error.format() }, { status: 400 })
     }
     const { images, ...vehicleData } = validation.data
+
+    // Automatically set status based on user role
+    if (user.role === 'ADMIN') {
+      vehicleData.status = 'active'
+    } else {
+      vehicleData.status = 'pending'
+    }
 
     const vehicle = await prisma.vehicle.create({
       data: {

@@ -69,14 +69,21 @@ export default async function DashboardPage() {
                       </h2>
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
-                          v.isActive ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                          v.status === "active" ? "bg-green-100 text-green-700" : 
+                          v.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                          v.status === "rejected" ? "bg-red-100 text-red-800" :
+                          v.status === "sold" ? "bg-blue-100 text-blue-800" :
+                          "bg-gray-100 text-gray-700"
                         }`}
                       >
-                        {v.isActive ? "Activo" : "Pausado"}
+                        {v.status === "active" ? "Activo" : 
+                         v.status === "pending" ? "Pendiente" :
+                         v.status === "rejected" ? "Rechazado" :
+                         v.status === "sold" ? "Vendido" : "Pausado"}
                       </span>
                     </div>
                     <p className="text-lg font-bold text-green-600">${Number(v.price).toLocaleString()}</p>
-                    <VehicleActions id={v.id} isActive={v.isActive} />
+                    <VehicleActions id={v.id} isActive={v.isActive} status={v.status} />
                   </div>
                 </div>
               )

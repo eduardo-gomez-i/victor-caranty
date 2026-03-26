@@ -10,6 +10,7 @@ interface VehicleProps {
   price: number | string | Prisma.Decimal
   mileage: number
   location: Prisma.JsonValue | null | undefined
+  state?: string | null
   images: { url: string }[]
 }
 
@@ -41,7 +42,13 @@ export default function VehicleCard({ vehicle }: { vehicle: VehicleProps }) {
           </p>
           <div className="flex justify-between text-xs text-gray-600">
             <span>{vehicle.mileage.toLocaleString()} km</span>
-            <span>{vehicle.location ? (vehicle.location as { city: string }).city : '-'}</span>
+            <span className="ml-3 line-clamp-1">
+              {(() => {
+                const city = vehicle.location ? (vehicle.location as { city?: string }).city : undefined
+                const parts = [city, vehicle.state ?? undefined].filter(Boolean) as string[]
+                return parts.length ? parts.join(', ') : '-'
+              })()}
+            </span>
           </div>
         </div>
       </div>

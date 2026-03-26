@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
-import { ShieldCheck, Handshake, BadgeDollarSign, Building2, Car, Truck, CarFront, Eye, CalendarCheck } from 'lucide-react'
+import { ShieldCheck, Handshake, BadgeDollarSign, Building2, Car, Truck, CarFront, Eye, CalendarCheck, ArrowRight } from 'lucide-react'
 import Footer from '@/components/layout/Footer'
 import Navbar from '@/components/layout/Navbar'
 import VehicleCard from '@/components/vehicles/VehicleCard'
@@ -120,6 +120,54 @@ export default async function Home() {
                 No hay vehículos publicados aún.
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="rounded-3xl border border-gray-200 bg-gradient-to-br from-green-600 to-green-700 text-white overflow-hidden shadow-lg">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-10 items-center">
+              <div>
+                <p className="text-white/80 font-semibold">¿Tienes un auto en venta?</p>
+                <h2 className="mt-2 text-3xl md:text-4xl font-extrabold tracking-tight">
+                  Publícalo y llega a compradores reales
+                </h2>
+                <p className="mt-3 text-white/90">
+                  Publica tu auto en minutos con fotos, precio y detalles. Nosotros nos encargamos de atender a los interesados y darte seguimiento hasta concretar la venta.
+                </p>
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/publish"
+                    className="inline-flex items-center justify-center h-12 px-6 rounded-full bg-white text-green-700 font-semibold hover:bg-white/90 transition-colors"
+                  >
+                    Publicar mi vehículo
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                  <Link
+                    href="/nosotros"
+                    className="inline-flex items-center justify-center h-12 px-6 rounded-full border border-white/30 text-white font-semibold hover:bg-white/10 transition-colors"
+                  >
+                    Conocer más
+                  </Link>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="rounded-2xl bg-white/10 border border-white/15 p-5">
+                  <ShieldCheck className="h-7 w-7 text-white" />
+                  <p className="mt-3 font-semibold">Publicación confiable</p>
+                  <p className="mt-1 text-sm text-white/80">Anuncios claros y sin complicaciones.</p>
+                </div>
+                <div className="rounded-2xl bg-white/10 border border-white/15 p-5">
+                  <BadgeDollarSign className="h-7 w-7 text-white" />
+                  <p className="mt-3 font-semibold">Mejor precio</p>
+                  <p className="mt-1 text-sm text-white/80">Define tu precio y recibe interesados.</p>
+                </div>
+                <div className="rounded-2xl bg-white/10 border border-white/15 p-5">
+                  <Handshake className="h-7 w-7 text-white" />
+                  <p className="mt-3 font-semibold">Cierre más fácil</p>
+                  <p className="mt-1 text-sm text-white/80">Nosotros atendemos el WhatsApp y filtramos interesados.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

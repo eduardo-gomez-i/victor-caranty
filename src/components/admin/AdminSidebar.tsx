@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { LayoutDashboard, ShoppingCart } from "lucide-react"
+import { LayoutDashboard, Users, Car } from "lucide-react"
 
 export default function AdminSidebar() {
   return (
@@ -15,11 +15,18 @@ export default function AdminSidebar() {
             Dashboard
           </Link>
           <Link
-            href="/admin/orders"
+            href="/admin/vehicles"
             className="flex items-center gap-2 rounded-xl px-3 py-2 text-gray-800 hover:bg-gray-50"
           >
-            <ShoppingCart className="h-4 w-4 text-green-600" />
-            Pedidos
+            <Car className="h-4 w-4 text-green-600" />
+            Vehículos
+          </Link>
+          <Link
+            href="/admin/users"
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-gray-800 hover:bg-gray-50"
+          >
+            <Users className="h-4 w-4 text-green-600" />
+            Usuarios
           </Link>
         </nav>
       </div>

@@ -19,7 +19,7 @@ export function TableRow({ className, ...props }: React.HTMLAttributes<HTMLTable
 
 export function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <th className={twMerge("h-11 px-4 text-left align-middle font-medium text-gray-800", className)} {...props} />
+    <th className={twMerge("h-11 px-4 text-left align-middle font-medium text-gray-900", className)} {...props} />
   )
 }
 

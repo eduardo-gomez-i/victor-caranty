@@ -30,6 +30,10 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "No autorizado" }, { status: 403 })
     }
 
+    if (existing.status === 'pending' || existing.status === 'rejected') {
+      return NextResponse.json({ error: "No se puede modificar un vehículo pendiente o rechazado" }, { status: 400 })
+    }
+
     const rawIsActive = (data as { isActive?: unknown }).isActive
     const isActive =
       typeof rawIsActive === "string"

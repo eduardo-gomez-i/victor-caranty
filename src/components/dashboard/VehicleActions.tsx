@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-export default function VehicleActions({ id, isActive }: { id: string; isActive: boolean }) {
+export default function VehicleActions({ id, isActive, status }: { id: string; isActive: boolean; status: string }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -40,12 +40,15 @@ export default function VehicleActions({ id, isActive }: { id: string; isActive:
     }
   }
 
+  const isPendingOrRejected = status === 'pending' || status === 'rejected';
+
   return (
     <div className="flex gap-2 pt-2">
       <button
         onClick={toggleActive}
-        disabled={loading}
+        disabled={loading || isPendingOrRejected}
         className="h-9 px-3 rounded-md border border-gray-300 text-gray-800 hover:bg-gray-50 text-sm disabled:opacity-60"
+        title={isPendingOrRejected ? "No se puede pausar/activar un vehículo pendiente o rechazado" : ""}
       >
         {isActive ? 'Pausar' : 'Activar'}
       </button>
