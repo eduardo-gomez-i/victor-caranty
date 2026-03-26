@@ -10,7 +10,7 @@ export default async function Home() {
   const vehicles = await prisma.vehicle.findMany({
     where: { isActive: true, status: 'active' },
     include: { images: { where: { isPrimary: true }, take: 1 } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { updatedAt: 'desc' },
     take: 6,
   })
 
