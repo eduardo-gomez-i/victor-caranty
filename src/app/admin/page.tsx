@@ -28,7 +28,7 @@ export default async function AdminDashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-sm text-gray-700">Resumen general de la plataforma</p>
         </div>
-        <Link href="/admin/vehicles" className="text-sm font-medium text-green-700 hover:text-green-800">
+        <Link href="/admin/vehicles" className="text-sm font-medium text-primary hover:text-primary-700">
           Ver vehículos
         </Link>
       </div>
@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
             <CardTitle>Vehículos Activos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">{activeVehicles}</div>
+            <div className="text-3xl font-bold text-primary">{activeVehicles}</div>
           </CardContent>
         </Card>
 
@@ -105,7 +105,7 @@ export default async function AdminDashboardPage() {
                         <TableCell>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             v.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            v.status === 'active' ? 'bg-green-100 text-green-800' :
+                            v.status === 'active' ? 'bg-blue-100 text-blue-800' :
                             v.status === 'rejected' ? 'bg-red-100 text-red-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>

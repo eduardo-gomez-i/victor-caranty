@@ -49,7 +49,7 @@ export default function AdminVehicleActions({ vehicleId, currentStatus }: { vehi
         size="sm"
         onClick={() => updateStatus('active')}
         isLoading={isLoading}
-        className="bg-green-600 hover:bg-green-700 text-white p-2 h-8"
+        className="bg-primary hover:bg-primary-700 text-white p-2 h-8"
         title="Aprobar"
       >
         {!isLoading && <Check className="h-4 w-4" />}

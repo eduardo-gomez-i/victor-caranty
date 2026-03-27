@@ -54,7 +54,7 @@ export default async function VehicleDetail({ params }: Props) {
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Navbar />
-      <div className="container mx-auto px-4 pt-24 pb-8">
+      <div className="container mx-auto px-4 pt-10 pb-8">
         {vehicle.status === 'pending' && (
           <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 shrink-0" />
@@ -86,7 +86,7 @@ export default async function VehicleDetail({ params }: Props) {
             <h1 className="text-3xl font-bold mb-2 text-gray-900 break-words">
               {vehicle.make} {vehicle.model} <span className="text-gray-500 font-normal text-2xl ml-2">{vehicle.year}</span>
             </h1>
-            <p className="text-4xl font-bold text-green-600 mb-6">
+            <p className="text-4xl font-bold text-primary mb-6">
               ${Number(vehicle.price).toLocaleString()}
             </p>
             
@@ -112,7 +112,7 @@ export default async function VehicleDetail({ params }: Props) {
                     href="https://wa.me/524428630968"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-gray-900 hover:text-green-600 underline"
+                    className="font-semibold text-gray-900 hover:text-primary underline"
                   >
                     +52 442 863 0968
                   </a>

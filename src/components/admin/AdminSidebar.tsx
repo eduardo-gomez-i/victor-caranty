@@ -11,21 +11,21 @@ export default function AdminSidebar() {
             href="/admin"
             className="flex items-center gap-2 rounded-xl px-3 py-2 text-gray-800 hover:bg-gray-50"
           >
-            <LayoutDashboard className="h-4 w-4 text-green-600" />
+            <LayoutDashboard className="h-4 w-4 text-primary" />
             Dashboard
           </Link>
           <Link
             href="/admin/vehicles"
             className="flex items-center gap-2 rounded-xl px-3 py-2 text-gray-800 hover:bg-gray-50"
           >
-            <Car className="h-4 w-4 text-green-600" />
+            <Car className="h-4 w-4 text-primary" />
             Vehículos
           </Link>
           <Link
             href="/admin/users"
             className="flex items-center gap-2 rounded-xl px-3 py-2 text-gray-800 hover:bg-gray-50"
           >
-            <Users className="h-4 w-4 text-green-600" />
+            <Users className="h-4 w-4 text-primary" />
             Usuarios
           </Link>
         </nav>
@@ -33,4 +33,3 @@ export default function AdminSidebar() {
     </aside>
   )
 }
-

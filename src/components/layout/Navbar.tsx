@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { ShieldCheck, LogOut, Menu, X } from 'lucide-react'
+import Image from 'next/image'
+import { LogOut, Menu, X } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
@@ -22,7 +23,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 80)
+      setScrolled(window.scrollY > 10)
     }
     onScroll()
     window.addEventListener('scroll', onScroll)
@@ -30,22 +31,23 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
   }, [])
 
   const isTransparent = transparent && !scrolled
-  const textColor = isTransparent ? 'text-white' : 'text-black'
   const publishHref = session?.user ? '/publish' : '/login?redirect=/publish'
 
   return (
-    <header className={`${isTransparent ? 'fixed inset-x-0 top-0 z-50 bg-transparent' : 'fixed inset-x-0 top-0 z-50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-gray-200'} py-4 transition-colors duration-200 relative`}>
+    <header className={`${isTransparent ? 'sticky top-0 z-50 w-full bg-transparent' : 'sticky top-0 z-50 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-gray-200'} py-4 transition-colors duration-200 relative`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className={`inline-flex items-center gap-2 ${textColor} font-bold text-xl`}>
-              <ShieldCheck className="h-6 w-6 text-green-500" />
-              <span>Easy Motores</span>
+            <Link
+              href="/"
+              className={`inline-flex items-center gap-2 ${isTransparent ? 'bg-white/90 rounded-lg px-2 py-1' : ''}`}
+            >
+              <Image src="/easymotores_logo.png" alt="EasyMotores" width={180} height={32} className="h-8 w-auto" />
             </Link>
             <nav className={`hidden md:flex items-center gap-6 ${isTransparent ? 'text-white/90' : 'text-black/90'} text-sm`}>
-              <Link href={publishHref} className={`transition-colors ${isTransparent ? 'hover:text-white' : 'hover:text-green-700'}`}>Vende tu auto</Link>
-              <Link href="/" className={`transition-colors ${isTransparent ? 'hover:text-white' : 'hover:text-green-700'}`}>Compra un auto</Link>
-              <Link href="/nosotros" className={`transition-colors ${isTransparent ? 'hover:text-white' : 'hover:text-green-700'}`}>Nosotros</Link>
+              <Link href={publishHref} className={`transition-colors ${isTransparent ? 'hover:text-white' : 'hover:text-primary'}`}>Vende tu auto</Link>
+              <Link href="/" className={`transition-colors ${isTransparent ? 'hover:text-white' : 'hover:text-primary'}`}>Compra un auto</Link>
+              <Link href="/nosotros" className={`transition-colors ${isTransparent ? 'hover:text-white' : 'hover:text-primary'}`}>Nosotros</Link>
             </nav>
           </div>
           <div className="flex items-center gap-2">
@@ -55,7 +57,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
                       name="make"
                       defaultValue={searchDefaultValue}
                       placeholder="Busca por marca o modelo"
-                      className="h-10 w-full rounded-full border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900"
+                      className="h-10 w-full rounded-full border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900"
                     />
                 </form>
             )}
@@ -105,7 +107,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
                 </Button>
               </div>
             ) : (
-              <Link href="/login" className="inline-flex items-center justify-center h-10 px-4 rounded-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors">
+              <Link href="/login" className="inline-flex items-center justify-center h-10 px-4 rounded-full bg-primary hover:bg-primary-700 text-white font-semibold transition-colors">
                 Entrar
               </Link>
             )}
@@ -122,7 +124,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
                   name="make"
                   defaultValue={searchDefaultValue}
                   placeholder="Busca por marca o modelo"
-                  className="h-11 w-full rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900"
+                  className="h-11 w-full rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900"
                 />
               </form>
             )}

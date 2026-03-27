@@ -34,12 +34,12 @@ export default function VehicleTypeSelector({ value, onChange }: VehicleTypeSele
               className={`
                 flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 cursor-pointer
                 ${isSelected 
-                  ? 'border-green-600 bg-green-50 text-green-700 ring-1 ring-green-600' 
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-green-200 hover:bg-gray-50'
+                  ? 'border-primary bg-blue-50 text-primary ring-1 ring-primary' 
+                  : 'border-gray-200 bg-white text-gray-600 hover:border-blue-200 hover:bg-gray-50'
                 }
               `}
             >
-              <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-green-600' : 'text-gray-400'}`} />
+              <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-primary' : 'text-gray-400'}`} />
               <span className="text-sm font-medium">{type.label}</span>
             </button>
           )

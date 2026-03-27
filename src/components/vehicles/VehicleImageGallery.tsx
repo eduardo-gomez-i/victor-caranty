@@ -57,7 +57,7 @@ export default function VehicleImageGallery({ images, alt }: { images: ImageItem
                 type="button"
                 onClick={() => setActiveUrl(img.url)}
                 className={`relative aspect-video rounded overflow-hidden cursor-pointer transition ${
-                  isActive ? 'ring-2 ring-green-600' : 'hover:opacity-80'
+                  isActive ? 'ring-2 ring-primary' : 'hover:opacity-80'
                 }`}
               >
                 <img

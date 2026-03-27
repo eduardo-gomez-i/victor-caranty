@@ -25,7 +25,7 @@ export default function SearchFilters() {
           <select 
             name="make" 
             defaultValue={make}
-            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm bg-white"
+            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none text-sm bg-white text-gray-900"
           >
             <option value="">Todas</option>
             {VEHICLE_BRANDS.map(b => (
@@ -41,7 +41,7 @@ export default function SearchFilters() {
             name="model" 
             defaultValue={model}
             placeholder="Ej: Corolla" 
-            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm"
+            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none text-sm text-gray-900 placeholder:text-gray-400"
           />
         </div>
       </div>
@@ -52,7 +52,7 @@ export default function SearchFilters() {
         <select 
           name="type" 
           defaultValue={type}
-          className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm bg-white"
+          className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none text-sm bg-white text-gray-900"
         >
           <option value="">Todos</option>
           <option value="sedan">Sedán</option>
@@ -74,14 +74,14 @@ export default function SearchFilters() {
             type="number"
             defaultValue={minPrice}
             placeholder="Mín" 
-            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm"
+            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none text-sm text-gray-900 placeholder:text-gray-400"
           />
           <input 
             name="maxPrice" 
             type="number"
             defaultValue={maxPrice}
             placeholder="Máx" 
-            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm"
+            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none text-sm text-gray-900 placeholder:text-gray-400"
           />
         </div>
       </div>
@@ -95,21 +95,21 @@ export default function SearchFilters() {
             type="number"
             defaultValue={minYear}
             placeholder="Desde" 
-            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm"
+            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none text-sm text-gray-900 placeholder:text-gray-400"
           />
           <input 
             name="maxYear" 
             type="number"
             defaultValue={maxYear}
             placeholder="Hasta" 
-            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm"
+            className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none text-sm text-gray-900 placeholder:text-gray-400"
           />
         </div>
       </div>
 
       <button 
         type="submit" 
-        className="w-full h-10 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
+        className="w-full h-10 bg-primary hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors"
       >
         Aplicar Filtros
       </button>

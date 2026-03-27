@@ -22,54 +22,54 @@ export default async function Home() {
           style={{ backgroundImage: `url('/img/hero.jpg')` }}
         />
         <div className="absolute inset-0 -z-10 bg-black/40" />
+        <Navbar transparent showSearch={true} />
         <section className="relative overflow-hidden min-h-[75vh]">
-          <Navbar transparent showSearch={true} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 min-h-[75vh] flex items-center justify-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24 min-h-[75vh] flex items-center justify-center">
           <div className="max-w-4xl w-full text-center">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
               Compra y Vende aquí tu auto seminuevo
             </h1>
             <p className="mt-2 text-lg text-white/90">Trato directo con 0% riesgo</p>
             <form action="/search" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-5 gap-3 bg-white rounded-3xl md:rounded-full p-3 shadow-lg control-light">
-              <select name="make" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
+              <select name="make" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
                 <option value="">Marca</option>
                 {VEHICLE_BRANDS.map((m) => (
                   <option key={m} value={m}>{m}</option>
                 ))}
               </select>
-              <select name="year" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
+              <select name="year" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
                 <option value="">Año</option>
                 {Array.from({ length: 20 }).map((_, i) => {
                   const y = new Date().getFullYear() - i
                   return <option key={y} value={y}>{y}</option>
                 })}
               </select>
-              <input name="maxMileage" type="number" min="0" placeholder="Kilometraje máximo" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900" />
-              <select name="maxPrice" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-900">
+              <input name="maxMileage" type="number" min="0" placeholder="Kilometraje máximo" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900" />
+              <select name="maxPrice" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
                 <option value="">Presupuesto</option>
                 {[100000,150000,200000,300000,400000,500000].map((p) => (
                   <option key={p} value={p}>Hasta ${p.toLocaleString()}</option>
                 ))}
               </select>
-              <button type="submit" className="h-14 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-full transition-colors px-6">
+              <button type="submit" className="h-14 bg-primary hover:bg-primary-700 text-white font-semibold rounded-full transition-colors px-6">
                 Busca un auto
               </button>
             </form>
             <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-2 text-white">
-                <ShieldCheck className="h-6 w-6 text-green-400" />
+                <ShieldCheck className="h-6 w-6 text-primary" />
                 <span>Garantía legal</span>
               </div>
               <div className="flex items-center gap-2 text-white">
-                <Handshake className="h-6 w-6 text-green-400" />
+                <Handshake className="h-6 w-6 text-primary" />
                 <span>Pago seguro</span>
               </div>
               <div className="flex items-center gap-2 text-white">
-                <BadgeDollarSign className="h-6 w-6 text-green-400" />
+                <BadgeDollarSign className="h-6 w-6 text-primary" />
                 <span>Negocia sin riesgo</span>
               </div>
               <div className="flex items-center gap-2 text-white">
-                <Building2 className="h-6 w-6 text-green-400" />
+                <Building2 className="h-6 w-6 text-primary" />
                 <span>Entrega en showroom</span>
               </div>
             </div>
@@ -94,7 +94,7 @@ export default async function Home() {
                 <Link
                   key={t.id}
                   href={`/search?type=${t.id}`}
-                  className="flex flex-col items-center gap-2 rounded-xl p-4 transition-all hover:shadow-md bg-gray-50 hover:bg-white hover:text-green-600"
+                  className="flex flex-col items-center gap-2 rounded-xl p-4 transition-all hover:shadow-md bg-gray-50 hover:bg-white hover:text-primary"
                 >
                   <Icon className="h-8 w-8" />
                   <span>{t.label}</span>
@@ -107,7 +107,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-end justify-between mb-7">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Ofertas destacadas</h2>
-            <Link href="/" className="text-green-700 hover:text-green-800 font-medium">
+            <Link href="/" className="text-primary hover:text-primary-700 font-medium">
               Ver todos
             </Link>
           </div>
@@ -124,7 +124,7 @@ export default async function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="rounded-3xl border border-gray-200 bg-gradient-to-br from-green-600 to-green-700 text-white overflow-hidden shadow-lg">
+          <div className="rounded-3xl border border-gray-200 bg-gradient-to-br from-primary to-primary-700 text-white overflow-hidden shadow-lg">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-10 items-center">
               <div>
                 <p className="text-white/80 font-semibold">¿Tienes un auto en venta?</p>
@@ -137,7 +137,7 @@ export default async function Home() {
                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
                   <Link
                     href="/publish"
-                    className="inline-flex items-center justify-center h-12 px-6 rounded-full bg-white text-green-700 font-semibold hover:bg-white/90 transition-colors"
+                    className="inline-flex items-center justify-center h-12 px-6 rounded-full bg-white text-primary font-semibold hover:bg-white/90 transition-colors"
                   >
                     Publicar mi vehículo
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -175,43 +175,43 @@ export default async function Home() {
           <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900">Cómo funciona</h2>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
-              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-sm">
+              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-700 text-white flex items-center justify-center shadow-sm">
                 <CalendarCheck className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-xs font-medium text-green-700">1. Apártalo</p>
-              <p className="mt-1 font-semibold text-gray-900">Reserva sin riesgo</p>
-              <p className="mt-2 text-sm text-gray-600">Aparta en línea y asegura tu auto.</p>
+              <p className="mt-3 text-xs font-medium text-primary">1. Selecciona tu auto</p>
+              <p className="mt-1 font-semibold text-gray-900">Contacta a tu asesor</p>
+              <p className="mt-2 text-sm text-gray-600">Elige tu auto ideal y recibe atención personalizada.</p>
             </div>
             <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
-              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-sm">
+              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-700 text-white flex items-center justify-center shadow-sm">
                 <Eye className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-xs font-medium text-green-700">2. Conócelo</p>
-              <p className="mt-1 font-semibold text-gray-900">Showroom seguro</p>
-              <p className="mt-2 text-sm text-gray-600">Revísalo con especialistas antes de decidir.</p>
+              <p className="mt-3 text-xs font-medium text-primary">2. Agenda tu cita</p>
+              <p className="mt-1 font-semibold text-gray-900">Ven a ver el auto</p>
+              <p className="mt-2 text-sm text-gray-600">Coordina una cita para conocerlo a detalle.</p>
             </div>
             <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
-              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-sm">
+              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-700 text-white flex items-center justify-center shadow-sm">
                 <BadgeDollarSign className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-xs font-medium text-green-700">3. Págalo</p>
-              <p className="mt-1 font-semibold text-gray-900">Plataforma confiable</p>
+              <p className="mt-3 text-xs font-medium text-primary">3. Paga tu auto</p>
+              <p className="mt-1 font-semibold text-gray-900">Pagos protegidos</p>
               <p className="mt-2 text-sm text-gray-600">Pago protegido sin fraudes ni riesgos.</p>
             </div>
             <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
-              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-sm">
+              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-700 text-white flex items-center justify-center shadow-sm">
                 <Car className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-xs font-medium text-green-700">4. Llévatelo</p>
-              <p className="mt-1 font-semibold text-gray-900">Entrega con revisión</p>
-              <p className="mt-2 text-sm text-gray-600">Recoge en showroom con inspección final.</p>
+              <p className="mt-3 text-xs font-medium text-primary">4. Llévatelo</p>
+              <p className="mt-1 font-semibold text-gray-900">Con revisión</p>
+              <p className="mt-2 text-sm text-gray-600">Llévatelo con revisión e inspección final.</p>
             </div>
           </div>
         </div>
       </section>
-      </div>
-      <div className="bg-white">
-        <Footer />
+        <div className="bg-white">
+          <Footer />
+        </div>
       </div>
     </div>
   )

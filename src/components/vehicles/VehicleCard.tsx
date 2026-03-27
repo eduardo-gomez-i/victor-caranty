@@ -32,7 +32,7 @@ export default function VehicleCard({ vehicle }: { vehicle: VehicleProps }) {
           )}
         </div>
         <div className="p-4">
-          <h3 className="text-lg font-semibold mb-1 group-hover:text-green-600 line-clamp-1 transition-colors">
+          <h3 className="text-lg font-semibold mb-1 text-gray-900 group-hover:text-primary line-clamp-1 transition-colors">
             {vehicle.make} {vehicle.model} {vehicle.year}
           </h3>
           <p className="text-xl font-bold text-gray-900 mb-2">

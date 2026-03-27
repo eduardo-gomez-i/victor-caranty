@@ -59,36 +59,38 @@ export default async function SearchPage({
   })
 
   return (
-    <div className="min-h-screen bg-gray-500 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar searchDefaultValue={make} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Resultados de búsqueda</h1>
-        
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Sidebar */}
-          <aside className="w-full md:w-64 shrink-0">
-            <div className="sticky top-24">
-              <SearchFilters />
-            </div>
-          </aside>
+      <main className="w-full bg-white flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Resultados de búsqueda</h1>
           
-          {/* Results */}
-          <main className="flex-1">
-            {vehicles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {vehicles.map((vehicle) => (
-                  <VehicleCard key={vehicle.id} vehicle={vehicle} />
-                ))}
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Sidebar */}
+            <aside className="w-full md:w-64 shrink-0">
+              <div className="sticky top-24">
+                <SearchFilters />
               </div>
-            ) : (
-              <div className="bg-white rounded-xl p-12 text-center border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">No se encontraron vehículos</h3>
-                <p className="mt-2 text-gray-500">Intenta ajustar tus filtros de búsqueda.</p>
-              </div>
-            )}
-          </main>
+            </aside>
+            
+            {/* Results */}
+            <div className="flex-1">
+              {vehicles.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {vehicles.map((vehicle) => (
+                    <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl p-12 text-center border border-gray-200">
+                  <h3 className="text-lg font-medium text-gray-900">No se encontraron vehículos</h3>
+                  <p className="mt-2 text-gray-500">Intenta ajustar tus filtros de búsqueda.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   )

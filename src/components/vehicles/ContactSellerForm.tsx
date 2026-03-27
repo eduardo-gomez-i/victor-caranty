@@ -39,7 +39,7 @@ export default function ContactSellerForm({
 
   if (submitted) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800">
         Hemos enviado tu solicitud. Pronto se comunicarán contigo.
       </div>
     )

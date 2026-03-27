@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col ">
       <Navbar />
-      <main className="w-full bg-gray-500">
+      <main className="w-full bg-white flex-1">
         <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Mis vehículos publicados</h1>
 
@@ -38,7 +38,7 @@ export default async function DashboardPage() {
             <p className="text-gray-700">Aún no has publicado ningún vehículo.</p>
             <a
               href="/publish"
-              className="inline-flex items-center justify-center mt-4 h-10 px-4 rounded-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors"
+              className="inline-flex items-center justify-center mt-4 h-10 px-4 rounded-full bg-primary hover:bg-primary-700 text-white font-semibold transition-colors"
             >
               Publicar vehículo
             </a>
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
                       </h2>
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
-                          v.status === "active" ? "bg-green-100 text-green-700" : 
+                          v.status === "active" ? "bg-blue-100 text-blue-700" : 
                           v.status === "pending" ? "bg-yellow-100 text-yellow-800" :
                           v.status === "rejected" ? "bg-red-100 text-red-800" :
                           v.status === "sold" ? "bg-blue-100 text-blue-800" :
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
                          v.status === "sold" ? "Vendido" : "Pausado"}
                       </span>
                     </div>
-                    <p className="text-lg font-bold text-green-600">${Number(v.price).toLocaleString()}</p>
+                    <p className="text-lg font-bold text-primary">${Number(v.price).toLocaleString()}</p>
                     <VehicleActions id={v.id} isActive={v.isActive} status={v.status} />
                   </div>
                 </div>
