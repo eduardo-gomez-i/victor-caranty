@@ -42,6 +42,7 @@ async function notifyAdminsAboutPendingVehicle(args: {
         hasApiKey: Boolean(apiKey),
         hasDomain: Boolean(domain),
         domain,
+        apiKey,
       });
 
   const fixed = 'gomez.i.eduardomanuel@gmail.com'
