@@ -50,7 +50,7 @@ async function notifyAdminsAboutPendingVehicle(args: {
     return
   }
 
-  const fixed = 'gomez.i.eduardomanuel@gmail.com'
+  const fixed = 'vic.tor56@hotmail.com'
   const to = fixed
   if (!to) return
 
