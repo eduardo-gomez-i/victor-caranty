@@ -34,16 +34,21 @@ async function notifyAdminsAboutPendingVehicle(args: {
     userId: string
   }
 }) {
+  const debugEnabled = process.env.MAILGUN_DEBUG === '1' || process.env.MAILGUN_DEBUG === 'true'
+  const mask = (v: string) => (v.length <= 8 ? '***' : `${v.slice(0, 4)}...${v.slice(-4)}`)
+
   const apiKey = process.env.MAILGUN_API_KEY
   const domain = process.env.MAILGUN_DOMAIN
-  if (!apiKey || !domain) return
-
-  console.log('Mailgun config missing', {
+  if (!apiKey || !domain) {
+    if (debugEnabled) {
+      console.log('Mailgun config missing', {
         hasApiKey: Boolean(apiKey),
         hasDomain: Boolean(domain),
         domain,
-        apiKey,
-      });
+      })
+    }
+    return
+  }
 
   const fixed = 'gomez.i.eduardomanuel@gmail.com'
   const to = fixed
@@ -55,6 +60,7 @@ async function notifyAdminsAboutPendingVehicle(args: {
   })
 
   const from = process.env.MAILGUN_FROM || `postmaster@${domain}`
+  const baseUrl = (process.env.MAILGUN_BASE_URL || 'https://api.mailgun.net').replace(/\/+$/, '')
   const subject = `Nuevo vehículo pendiente: ${args.vehicle.make} ${args.vehicle.model} ${args.vehicle.year}`
   const adminUrl = `${args.origin}/admin/vehicles`
   const vehicleUrl = `${args.origin}/vehicles/${args.vehicle.id}`
@@ -90,10 +96,26 @@ async function notifyAdminsAboutPendingVehicle(args: {
     ].join(''),
   })
 
-  const res = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+  const url = `${baseUrl}/v3/${domain}/messages`
+  const authorization = `Basic ${Buffer.from(`api:${apiKey}`).toString('base64')}`
+
+  if (debugEnabled) {
+    console.log('Mailgun request', {
+      url,
+      domain,
+      from,
+      to,
+      apiKeyMasked: mask(apiKey),
+      apiKeyLen: apiKey.length,
+      origin: args.origin,
+      vehicleId: args.vehicle.id,
+    })
+  }
+
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
-      Authorization: `Basic ${Buffer.from(`api:${apiKey}`).toString('base64')}`,
+      Authorization: authorization,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body,
@@ -102,6 +124,15 @@ async function notifyAdminsAboutPendingVehicle(args: {
   if (!res.ok) {
     const msg = await res.text().catch(() => '')
     console.error('Mailgun error:', res.status, msg)
+    if (debugEnabled) {
+      console.log('Mailgun response headers', {
+        wwwAuthenticate: res.headers.get('www-authenticate'),
+        requestId: res.headers.get('x-request-id'),
+      })
+    }
+  } else if (debugEnabled) {
+    const okMsg = await res.text().catch(() => '')
+    console.log('Mailgun ok:', res.status, okMsg)
   }
 }
 
