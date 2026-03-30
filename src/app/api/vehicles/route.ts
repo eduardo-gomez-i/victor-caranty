@@ -60,7 +60,8 @@ async function notifyAdminsAboutPendingVehicle(args: {
   })
 
   const from = process.env.MAILGUN_FROM || `postmaster@${domain}`
-  const baseUrl = (process.env.MAILGUN_BASE_URL || 'https://api.mailgun.net').replace(/\/+$/, '')
+  const envBaseUrl = process.env.MAILGUN_BASE_URL
+  const baseUrl = (envBaseUrl || 'https://api.mailgun.net').replace(/\/+$/, '')
   const subject = `Nuevo vehículo pendiente: ${args.vehicle.make} ${args.vehicle.model} ${args.vehicle.year}`
   const adminUrl = `${args.origin}/admin/vehicles`
   const vehicleUrl = `${args.origin}/vehicles/${args.vehicle.id}`
@@ -112,20 +113,34 @@ async function notifyAdminsAboutPendingVehicle(args: {
     })
   }
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: authorization,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body,
-  })
+  const send = async (targetBaseUrl: string) => {
+    const targetUrl = `${targetBaseUrl.replace(/\/+$/, '')}/v3/${domain}/messages`
+    const res = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: authorization,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    })
+    return { res, targetUrl }
+  }
+
+  let { res, targetUrl } = await send(baseUrl)
+  if (res.status === 401 && !envBaseUrl) {
+    const fallbackBaseUrl = 'https://api.eu.mailgun.net'
+    if (debugEnabled) {
+      console.log('Mailgun 401, retrying with EU endpoint', { fallbackBaseUrl })
+    }
+    ;({ res, targetUrl } = await send(fallbackBaseUrl))
+  }
 
   if (!res.ok) {
     const msg = await res.text().catch(() => '')
     console.error('Mailgun error:', res.status, msg)
     if (debugEnabled) {
       console.log('Mailgun response headers', {
+        targetUrl,
         wwwAuthenticate: res.headers.get('www-authenticate'),
         requestId: res.headers.get('x-request-id'),
       })
