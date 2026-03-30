@@ -31,7 +31,15 @@ export default async function DashboardPage() {
       <Navbar />
       <main className="w-full bg-white flex-1">
         <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Mis vehículos publicados</h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Mis vehículos publicados</h1>
+          <a
+            href="/publish"
+            className="inline-flex items-center justify-center h-10 px-4 rounded-full bg-primary hover:bg-primary-700 text-white font-semibold transition-colors"
+          >
+            Publicar vehículo
+          </a>
+        </div>
 
         {vehicles.length === 0 ? (
           <div className="bg-white border border-gray-200 rounded-xl p-6 text-center">
