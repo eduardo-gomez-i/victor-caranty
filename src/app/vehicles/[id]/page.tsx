@@ -39,10 +39,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const vehicle = await getVehicle(id)
   
   return {
-    title: `${vehicle.make} ${vehicle.model} ${vehicle.year} - $${vehicle.price}`,
-    description: `Vendo ${vehicle.make} ${vehicle.model} ${vehicle.year} con ${vehicle.mileage}km. ${vehicle.description?.substring(0, 100)}...`,
+    title: `${vehicle.make} ${vehicle.model} ${vehicle.year} en Querétaro - $${vehicle.price}`,
+    description: `Compra ${vehicle.make} ${vehicle.model} ${vehicle.year} con ${vehicle.mileage} km en Querétaro, México. Trato directo y pagos protegidos.`,
+    alternates: {
+      canonical: `/vehicles/${vehicle.id}`,
+    },
     openGraph: {
-      images: vehicle.images.map(img => img.url)
+      url: `/vehicles/${vehicle.id}`,
+      title: `${vehicle.make} ${vehicle.model} ${vehicle.year} en Querétaro`,
+      description: `Auto ${vehicle.make} ${vehicle.model} ${vehicle.year} con ${vehicle.mileage} km. Consulta fotos, precio y detalles.`,
+      siteName: 'EasyMotores',
+      locale: 'es_MX',
+      images: vehicle.images.map(img => img.url),
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${vehicle.make} ${vehicle.model} ${vehicle.year} en Querétaro`,
+      description: `Auto ${vehicle.make} ${vehicle.model} ${vehicle.year} con ${vehicle.mileage} km en Querétaro.`,
+      images: vehicle.images.length ? [vehicle.images[0].url] : undefined,
     }
   }
 }

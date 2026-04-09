@@ -4,6 +4,25 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import VehicleCard from '@/components/vehicles/VehicleCard'
 import SearchFilters from '@/components/search/SearchFilters'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Buscar autos en Querétaro | EasyMotores',
+  description: 'Encuentra autos seminuevos en Querétaro, México. Filtra por marca, modelo, año y precio.',
+  alternates: { canonical: '/search' },
+  openGraph: {
+    url: '/search',
+    title: 'Buscar autos en Querétaro | EasyMotores',
+    description: 'Filtra y encuentra autos seminuevos en Querétaro, México.',
+    siteName: 'EasyMotores',
+    locale: 'es_MX',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Buscar autos en Querétaro | EasyMotores',
+    description: 'Filtra y encuentra autos seminuevos en Querétaro, México.',
+  },
+}
 
 export default async function SearchPage({
   searchParams,
