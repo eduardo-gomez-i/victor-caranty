@@ -109,7 +109,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-end justify-between mb-7">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Ofertas destacadas</h2>
-            <Link href="/" className="text-primary hover:text-primary-700 font-medium">
+            <Link href="/search" className="text-primary hover:text-primary-700 font-medium">
               Ver todos
             </Link>
           </div>
