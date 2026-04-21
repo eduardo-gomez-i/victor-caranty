@@ -79,6 +79,35 @@ export default function PublishPage() {
     })
   }
 
+  const compressImage = (file: File, maxWidth = 1920, quality = 0.82): Promise<File> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        let { width, height } = img
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width)
+          width = maxWidth
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return resolve(file)
+            resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+      img.src = url
+    })
+  }
+
   const handleFiles = async (files: FileList | File[]) => {
     if (!files || (files as FileList).length === 0) return
     setUploading(true)
@@ -87,8 +116,9 @@ export default function PublishPage() {
     const newImages: string[] = []
     try {
       for (const file of list) {
+        const compressed = await compressImage(file)
         const data = new FormData()
-        data.append('file', file)
+        data.append('file', compressed)
         const res = await fetch('/api/upload', { method: 'POST', body: data })
         if (!res.ok) throw new Error('Error al subir imagen')
         const json = await res.json()
