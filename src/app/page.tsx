@@ -1,3 +1,5 @@
+export const revalidate = 0
+
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { ShieldCheck, Handshake, BadgeDollarSign, Building2, Car, Truck, CarFront, Eye, CalendarCheck, ArrowRight } from 'lucide-react'
