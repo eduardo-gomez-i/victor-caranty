@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
+import { z } from "zod"
 
 export const runtime = "nodejs"
+
+const editSchema = z.object({
+  make: z.string().min(1).optional(),
+  model: z.string().min(1).optional(),
+  year: z.coerce.number().int().min(1900).optional(),
+  mileage: z.coerce.number().int().min(0).optional(),
+  price: z.coerce.number().positive().optional(),
+  description: z.string().optional(),
+  type: z.string().optional(),
+  state: z.string().optional(),
+  location: z.any().optional(),
+  images: z.array(z.string().min(1)).optional(),
+  isActive: z.union([z.boolean(), z.string()]).optional(),
+})
 
 export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
@@ -11,15 +26,12 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "Debe iniciar sesión" }, { status: 401 })
     }
 
-    // Allow form POST override (_method=PATCH)
-    const contentType = request.headers.get("content-type") || ""
-    let data: Record<string, unknown> = {}
-    if (contentType.includes("application/json")) {
-      data = await request.json()
-    } else if (contentType.includes("application/x-www-form-urlencoded")) {
-      const form = await request.formData()
-      data = Object.fromEntries(form.entries())
+    const body = await request.json()
+    const parsed = editSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.format() }, { status: 400 })
     }
+    const data = parsed.data
 
     const { id } = await context.params
     const existing = await prisma.vehicle.findUnique({ where: { id } })
@@ -30,24 +42,52 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "No autorizado" }, { status: 403 })
     }
 
-    if (existing.status === 'pending' || existing.status === 'rejected') {
-      return NextResponse.json({ error: "No se puede modificar un vehículo pendiente o rechazado" }, { status: 400 })
-    }
+    const isFullEdit = data.make !== undefined || data.model !== undefined ||
+      data.year !== undefined || data.mileage !== undefined || data.price !== undefined ||
+      data.description !== undefined || data.type !== undefined || data.state !== undefined ||
+      data.images !== undefined
 
-    const rawIsActive = (data as { isActive?: unknown }).isActive
-    const isActive =
-      typeof rawIsActive === "string"
-        ? rawIsActive === "true"
-        : typeof rawIsActive === "boolean"
-        ? rawIsActive
+    const isActiveValue =
+      typeof data.isActive === "string"
+        ? data.isActive === "true"
+        : typeof data.isActive === "boolean"
+        ? data.isActive
         : undefined
+
+    const newStatus = isFullEdit
+      ? session.user.role === "ADMIN" ? "active" : "pending"
+      : existing.status
 
     const updated = await prisma.vehicle.update({
       where: { id },
       data: {
-        isActive: isActive ?? existing.isActive,
+        ...(data.make !== undefined && { make: data.make }),
+        ...(data.model !== undefined && { model: data.model }),
+        ...(data.year !== undefined && { year: data.year }),
+        ...(data.mileage !== undefined && { mileage: data.mileage }),
+        ...(data.price !== undefined && { price: data.price }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.type !== undefined && { type: data.type }),
+        ...(data.state !== undefined && { state: data.state }),
+        ...(data.location !== undefined && { location: data.location }),
+        ...(isActiveValue !== undefined && { isActive: isActiveValue }),
+        status: newStatus,
       },
     })
+
+    if (data.images !== undefined) {
+      await prisma.image.deleteMany({ where: { vehicleId: id } })
+      if (data.images.length > 0) {
+        await prisma.image.createMany({
+          data: data.images.map((url: string, index: number) => ({
+            vehicleId: id,
+            url,
+            displayOrder: index,
+            isPrimary: index === 0,
+          })),
+        })
+      }
+    }
 
     return NextResponse.json(updated)
   } catch (error) {
@@ -61,16 +101,6 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Debe iniciar sesión" }, { status: 401 })
-    }
-
-    // Allow form POST override (_method=DELETE)
-    const contentType = request.headers.get("content-type") || ""
-    if (contentType.includes("application/x-www-form-urlencoded")) {
-      const form = await request.formData()
-      const method = form.get("_method")
-      if (method !== "DELETE") {
-        return NextResponse.json({ error: "Método inválido" }, { status: 400 })
-      }
     }
 
     const { id } = await context.params

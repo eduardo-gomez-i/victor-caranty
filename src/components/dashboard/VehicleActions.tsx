@@ -43,7 +43,13 @@ export default function VehicleActions({ id, isActive, status }: { id: string; i
   const isPendingOrRejected = status === 'pending' || status === 'rejected';
 
   return (
-    <div className="flex gap-2 pt-2">
+    <div className="flex flex-wrap gap-2 pt-2">
+      <a
+        href={`/dashboard/vehicles/${id}/edit`}
+        className="h-9 px-3 rounded-md bg-primary hover:bg-primary-700 text-white text-sm inline-flex items-center"
+      >
+        Editar
+      </a>
       <button
         onClick={toggleActive}
         disabled={loading || isPendingOrRejected}
