@@ -3,7 +3,12 @@
     "allow": [
       "Bash(node prisma/update-admin.js)",
       "Bash(curl -I http://localhost:3000/uploads/1779757554132-877c1682feaac-1000123349.jpg)",
-      "Bash(mkdir -p \"c:\\\\wamp64\\\\www\\\\victor-carros\\\\src\\\\app\\\\dashboard\\\\vehicles\\\\[id]\\\\edit\")"
+      "Bash(mkdir -p \"c:\\\\wamp64\\\\www\\\\victor-carros\\\\src\\\\app\\\\dashboard\\\\vehicles\\\\[id]\\\\edit\")",
+      "Bash(npm audit *)",
+      "Bash(node *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npx prisma *)"
     ],
     "additionalDirectories": [
       "c:\\wamp64\\www\\victor-carros\\src\\app\\dashboard\\vehicles\\[id]"
