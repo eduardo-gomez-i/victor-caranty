@@ -8,7 +8,8 @@
       "Bash(node *)",
       "Bash(npm install *)",
       "Bash(npm run *)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(curl *)"
     ],
     "additionalDirectories": [
       "c:\\wamp64\\www\\victor-carros\\src\\app\\dashboard\\vehicles\\[id]"
