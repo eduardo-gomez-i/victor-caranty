@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { z } from "zod"
+import { saveVerifiedSpecFromVehicle } from "@/lib/vehicle-specs"
 
 export const runtime = "nodejs"
 
 const editSchema = z.object({
   make: z.string().min(1).optional(),
   model: z.string().min(1).optional(),
+  version: z.string().max(100).optional(),
+  invoiceType: z.string().max(50).optional(),
+  transmission: z.string().max(20).optional(),
   year: z.coerce.number().int().min(1900).optional(),
   mileage: z.coerce.number().int().min(0).optional(),
   price: z.coerce.number().positive().optional(),
@@ -43,6 +47,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     }
 
     const isFullEdit = data.make !== undefined || data.model !== undefined ||
+      data.version !== undefined || data.invoiceType !== undefined || data.transmission !== undefined ||
       data.year !== undefined || data.mileage !== undefined || data.price !== undefined ||
       data.description !== undefined || data.type !== undefined || data.state !== undefined ||
       data.images !== undefined
@@ -63,6 +68,9 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       data: {
         ...(data.make !== undefined && { make: data.make }),
         ...(data.model !== undefined && { model: data.model }),
+        ...(data.version !== undefined && { version: data.version || null }),
+        ...(data.invoiceType !== undefined && { invoiceType: data.invoiceType || null }),
+        ...(data.transmission !== undefined && { transmission: data.transmission || null }),
         ...(data.year !== undefined && { year: data.year }),
         ...(data.mileage !== undefined && { mileage: data.mileage }),
         ...(data.price !== undefined && { price: data.price }),
@@ -86,6 +94,14 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
             isPrimary: index === 0,
           })),
         })
+      }
+    }
+
+    if (isFullEdit && updated.status === "active") {
+      try {
+        await saveVerifiedSpecFromVehicle(updated)
+      } catch (e) {
+        console.error("No se pudo guardar la ficha verificada:", e)
       }
     }
 

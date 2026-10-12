@@ -36,3 +36,13 @@ export const VEHICLE_BRANDS = [
   'Volkswagen',
   'Volvo'
 ] as const;
+
+export const INVOICE_TYPES = [
+  'Factura original',
+  'Refacturado',
+  'Factura de aseguradora',
+  'Factura de financiera / arrendadora',
+  'Factura de empresa',
+] as const;
+
+export const TRANSMISSIONS = ['Manual', 'Automática'] as const;

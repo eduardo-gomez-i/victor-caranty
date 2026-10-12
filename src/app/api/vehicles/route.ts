@@ -3,12 +3,16 @@ import prisma from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { requireRole } from '@/lib/auth'
+import { saveVerifiedSpecFromVehicle } from '@/lib/vehicle-specs'
 
 export const runtime = 'nodejs'
 
 const vehicleSchema = z.object({
   make: z.string().min(1),
   model: z.string().min(1),
+  version: z.string().max(100).optional(),
+  invoiceType: z.string().max(50).optional(),
+  transmission: z.string().max(20).optional(),
   year: z.coerce.number().int().min(1900),
   mileage: z.coerce.number().int().min(0),
   price: z.coerce.number().positive(),
@@ -221,6 +225,14 @@ export async function POST(request: NextRequest) {
         images: true
       }
     })
+
+    if (vehicle.status === 'active') {
+      try {
+        await saveVerifiedSpecFromVehicle(vehicle)
+      } catch (e) {
+        console.error('No se pudo guardar la ficha verificada:', e)
+      }
+    }
 
     if (vehicle.status === 'pending') {
       try {

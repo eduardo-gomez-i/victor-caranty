@@ -10,7 +10,8 @@ import Button from '@/components/ui/Button'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
-import { VEHICLE_BRANDS } from '@/constants/vehicles'
+import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
+import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
   'Aguascalientes',
@@ -59,10 +60,13 @@ export default function PublishPage() {
     make: '',
     customMake: '',
     model: '',
+    version: '',
     year: '',
     mileage: '',
     price: '',
     description: '',
+    invoiceType: '',
+    transmission: '',
     state: '',
     city: '',
     type: ''
@@ -154,6 +158,9 @@ export default function PublishPage() {
       const payload = {
         make,
         model: formData.model,
+        version: formData.version,
+        invoiceType: formData.invoiceType,
+        transmission: formData.transmission,
         year: parseInt(formData.year),
         mileage: parseInt(formData.mileage),
         price: parseFloat(formData.price),
@@ -239,6 +246,10 @@ export default function PublishPage() {
                     <Input type="text" name="model" id="model" required value={formData.model} onChange={handleChange} />
                   </div>
                   <div>
+                    <label htmlFor="version" className="block text-sm font-medium text-gray-700">Versión</label>
+                    <Input type="text" name="version" id="version" placeholder="Ej. Comfortline" value={formData.version} onChange={handleChange} />
+                  </div>
+                  <div>
                     <label htmlFor="year" className="block text-sm font-medium text-gray-700">Año</label>
                     <Input type="number" name="year" id="year" required min={1900} max={new Date().getFullYear() + 1} value={formData.year} onChange={handleChange} />
                   </div>
@@ -247,12 +258,47 @@ export default function PublishPage() {
                     <Input type="number" name="mileage" id="mileage" required min={0} value={formData.mileage} onChange={handleChange} />
                   </div>
                   <div>
+                    <label htmlFor="transmission" className="block text-sm font-medium text-gray-700">Transmisión</label>
+                    <Select name="transmission" id="transmission" required value={formData.transmission} onChange={handleChange}>
+                      <option value="">Selecciona transmisión</option>
+                      {TRANSMISSIONS.map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <label htmlFor="invoiceType" className="block text-sm font-medium text-gray-700">Tipo de factura</label>
+                    <Select name="invoiceType" id="invoiceType" required value={formData.invoiceType} onChange={handleChange}>
+                      <option value="">Selecciona tipo de factura</option>
+                      {INVOICE_TYPES.map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
                     <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio ($)</label>
                     <Input type="number" name="price" id="price" required min={0} step="0.01" value={formData.price} onChange={handleChange} />
                   </div>
                   <div className="md:col-span-2">
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
-                    <Textarea name="description" id="description" rows={4} value={formData.description} onChange={handleChange} />
+                    <div className="flex items-end justify-between gap-4 mb-1">
+                      <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
+                      <GenerateDescriptionButton
+                        vehicle={{
+                          make: formData.make === '__other__' ? formData.customMake.trim() : formData.make,
+                          model: formData.model,
+                          version: formData.version,
+                          year: formData.year,
+                          mileage: formData.mileage,
+                          transmission: formData.transmission,
+                          invoiceType: formData.invoiceType,
+                          type: formData.type,
+                        }}
+                        currentDescription={formData.description}
+                        onGenerated={(description) => setFormData(prev => ({ ...prev, description }))}
+                      />
+                    </div>
+                    <Textarea name="description" id="description" rows={10} value={formData.description} onChange={handleChange} />
+                    <p className="mt-1 text-xs text-gray-500">Puedes revisar y editar el texto antes de guardar.</p>
                   </div>
                   <div>
                     <label htmlFor="state" className="block text-sm font-medium text-gray-700">Estado</label>

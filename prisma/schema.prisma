@@ -80,6 +80,9 @@ model Vehicle {
   userId      String   @map("user_id")
   make        String
   model       String
+  version     String?  @db.VarChar(100)
+  invoiceType String?  @map("invoice_type") @db.VarChar(50)
+  transmission String? @db.VarChar(20)
   year        Int
   mileage     Int
   price       Decimal  @db.Decimal(10, 2)
@@ -119,4 +122,22 @@ model Image {
   @@index([vehicleId])
   @@index([isPrimary])
   @@map("images")
+}
+
+// Equipamiento por versión. verified=true cuando un admin aprobó un anuncio con esa ficha.
+model VehicleSpec {
+  id        String   @id @default(uuid())
+  specKey   String   @unique @map("spec_key") @db.VarChar(190)
+  make      String   @db.VarChar(60)
+  model     String   @db.VarChar(80)
+  version   String   @db.VarChar(100)
+  year      Int
+  tagline   String?  @db.VarChar(200)
+  features  Json
+  sources   Json?
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("vehicle_specs")
 }

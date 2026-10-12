@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
+import { saveVerifiedSpecFromVehicle } from '@/lib/vehicle-specs'
 
 export async function PATCH(
   request: NextRequest,
@@ -20,6 +21,14 @@ export async function PATCH(
       where: { id },
       data: { status }
     })
+
+    if (vehicle.status === 'active') {
+      try {
+        await saveVerifiedSpecFromVehicle(vehicle)
+      } catch (e) {
+        console.error('No se pudo guardar la ficha verificada:', e)
+      }
+    }
 
     return NextResponse.json(vehicle)
   } catch (error) {
