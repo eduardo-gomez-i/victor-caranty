@@ -9,6 +9,7 @@ import Textarea from '@/components/ui/Textarea'
 import Button from '@/components/ui/Button'
 import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
+import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
 import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
@@ -196,12 +197,12 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
             {formData.make === '__other__' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700">Marca (otra)</label>
-                <Input type="text" name="customMake" required value={formData.customMake} onChange={handleChange} />
+                <Input type="text" name="customMake" required placeholder="Ej. Cupra" value={formData.customMake} onChange={handleChange} />
               </div>
             )}
             <div>
               <label className="block text-sm font-medium text-gray-700">Modelo</label>
-              <Input type="text" name="model" required value={formData.model} onChange={handleChange} />
+              <Input type="text" name="model" required placeholder="Ej. Jetta" value={formData.model} onChange={handleChange} />
             </div>
             <div>
               <label htmlFor="version" className="block text-sm font-medium text-gray-700">Versión</label>
@@ -209,11 +210,11 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Año</label>
-              <Input type="number" name="year" required min={1900} max={new Date().getFullYear() + 1} value={formData.year} onChange={handleChange} />
+              <Input type="number" name="year" required placeholder="Ej. 2020" min={1900} max={new Date().getFullYear() + 1} value={formData.year} onChange={handleChange} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Kilometraje (km)</label>
-              <Input type="number" name="mileage" required min={0} value={formData.mileage} onChange={handleChange} />
+              <Input type="number" name="mileage" required placeholder="Ej. 45000" min={0} value={formData.mileage} onChange={handleChange} />
             </div>
             <div>
               <label htmlFor="transmission" className="block text-sm font-medium text-gray-700">Transmisión</label>
@@ -235,28 +236,40 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Precio ($)</label>
-              <Input type="number" name="price" required min={0} step="0.01" value={formData.price} onChange={handleChange} />
+              <Input type="number" name="price" required placeholder="Ej. 285000" min={0} step="0.01" value={formData.price} onChange={handleChange} />
             </div>
-            <div className="md:col-span-2">
-              <div className="flex items-end justify-between gap-4 mb-1">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
-                <GenerateDescriptionButton
-                  vehicle={{
-                    make: formData.make === '__other__' ? formData.customMake.trim() : formData.make,
-                    model: formData.model,
-                    version: formData.version,
-                    year: formData.year,
-                    mileage: formData.mileage,
-                    transmission: formData.transmission,
-                    invoiceType: formData.invoiceType,
-                    type: formData.type,
-                  }}
-                  currentDescription={formData.description}
-                  onGenerated={(description) => setFormData(prev => ({ ...prev, description }))}
+            <div className="md:col-span-2 space-y-3">
+              <GenerateDescriptionButton
+                vehicle={{
+                  make: formData.make === '__other__' ? formData.customMake.trim() : formData.make,
+                  model: formData.model,
+                  version: formData.version,
+                  year: formData.year,
+                  mileage: formData.mileage,
+                  transmission: formData.transmission,
+                  invoiceType: formData.invoiceType,
+                  type: formData.type,
+                }}
+                currentDescription={formData.description}
+                onGenerated={(description) => setFormData(prev => ({ ...prev, description }))}
+              />
+              <div>
+                <div className="flex items-end justify-between gap-4 mb-1">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
+                  <CopyDescriptionButton description={formData.description} />
+                </div>
+                <Textarea
+                  name="description"
+                  id="description"
+                  rows={14}
+                  placeholder="Genera la descripción con IA o escríbela aquí. Ej. Único dueño, servicios de agencia, llantas nuevas..."
+                  value={formData.description}
+                  onChange={handleChange}
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Puedes revisar y editar el texto antes de guardar. &quot;Copiar descripción&quot; incluye el pie de EasyMotores para pegarlo en Marketplace u otras redes.
+                </p>
               </div>
-              <Textarea name="description" id="description" rows={10} value={formData.description} onChange={handleChange} />
-              <p className="mt-1 text-xs text-gray-500">Puedes revisar y editar el texto antes de guardar.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Estado</label>
@@ -269,7 +282,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Ciudad</label>
-              <Input type="text" name="city" value={formData.city} onChange={handleChange} />
+              <Input type="text" name="city" placeholder="Ej. Santiago de Querétaro" value={formData.city} onChange={handleChange} />
             </div>
           </div>
         </div>

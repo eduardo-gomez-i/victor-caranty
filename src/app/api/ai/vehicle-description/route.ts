@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { z } from "zod"
 import { TRANSMISSIONS } from "@/constants/vehicles"
 import { cleanFeatures, cleanTagline, findVerifiedSpec, saveCandidateSpec, Spec } from "@/lib/vehicle-specs"
+import { LISTING_FOOTER } from "@/lib/listing-footer"
 
 export const runtime = "nodejs"
 
@@ -219,10 +220,12 @@ function buildDescription(v: VehicleInput, spec: Spec, transmissions: string[]) 
     ...(spec.tagline ? [spec.tagline] : []),
     "",
     "CARACTERÍSTICAS:",
-    ...features.map((f) => `- ${f}`),
+    ...features.map((f) => `✅ ${f}`),
     "",
     `📄 ${v.invoiceType}`,
     `📍 ${km} km`,
     ...(closing ? [closing] : []),
+    "",
+    LISTING_FOOTER,
   ].join("\n")
 }

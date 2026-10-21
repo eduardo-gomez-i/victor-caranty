@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
     const filename = `${Date.now()}-${Math.random().toString(16).slice(2)}-${baseName}.${ext}`
     const filepath = path.join(uploadsDir, filename)
     await fs.writeFile(filepath, buffer)
+    // nginx (www-data) sirve /uploads; chmod explícito para no depender del umask del proceso
+    await fs.chmod(filepath, 0o644)
 
     const url = `/uploads/${filename}`
     return NextResponse.json({ url })
