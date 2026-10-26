@@ -40,7 +40,7 @@ export default function VehicleActions({ id, isActive, status }: { id: string; i
     }
   }
 
-  const isPendingOrRejected = status === 'pending' || status === 'rejected';
+  const isPendingOrRejected = status === 'pending' || status === 'reviewing' || status === 'rejected';
 
   return (
     <div className="flex flex-wrap gap-2 pt-2">

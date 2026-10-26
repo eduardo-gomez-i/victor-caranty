@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { z } from "zod"
+import { Prisma } from "@prisma/client"
+import { enqueuePhotos, photoAiEnabled } from "@/lib/photo-ai/worker"
+import { afterListingSaved, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
 import { saveVerifiedSpecFromVehicle } from "@/lib/vehicle-specs"
 
 export const runtime = "nodejs"
@@ -59,9 +62,23 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         ? data.isActive
         : undefined
 
-    const newStatus = isFullEdit
-      ? session.user.role === "ADMIN" ? "active" : "pending"
-      : existing.status
+    // El admin publica directo; el vendedor pasa por la revisión automática (texto y fotos)
+    const isAdmin = session.user.role === "ADMIN"
+    const review =
+      isFullEdit && !isAdmin
+        ? initialListingStatus(
+            listingTextReasons({
+              make: data.make ?? existing.make,
+              model: data.model ?? existing.model,
+              version: data.version !== undefined ? data.version : existing.version,
+              description: data.description !== undefined ? data.description : existing.description,
+            }),
+            data.images?.length ?? (await prisma.image.count({ where: { vehicleId: id } })),
+            photoAiEnabled()
+          )
+        : null
+    // "reviewing" se activa hasta que las fotos nuevas estén guardadas, para no revisar las anteriores
+    const newStatus = !isFullEdit ? existing.status : isAdmin ? "active" : review!.status === "reviewing" ? "pending" : review!.status
 
     const updated = await prisma.vehicle.update({
       where: { id },
@@ -80,6 +97,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         ...(data.location !== undefined && { location: data.location }),
         ...(isActiveValue !== undefined && { isActive: isActiveValue }),
         status: newStatus,
+        ...(review && { moderationFlags: review.reasons.length > 0 ? review.reasons : Prisma.DbNull }),
       },
     })
 
@@ -95,9 +113,28 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
           })),
         })
       }
+      try {
+        await enqueuePhotos(data.images)
+      } catch (e) {
+        console.error("No se pudieron encolar las fotos para IA:", e)
+      }
     }
 
-    if (isFullEdit && updated.status === "active") {
+    if (review) {
+      try {
+        if (review.status === "reviewing") {
+          await prisma.vehicle.update({ where: { id }, data: { status: "reviewing" } })
+          // Fotos que no cambiaron pero nunca pasaron por la IA (anuncios anteriores al módulo)
+          const current = await prisma.image.findMany({ where: { vehicleId: id }, select: { url: true } })
+          await enqueuePhotos(current.map((i) => i.url))
+        }
+        await afterListingSaved(id, review.reasons, request.nextUrl.origin)
+      } catch (e) {
+        console.error("No se pudo completar la revisión automática:", e)
+      }
+    }
+
+    if (isFullEdit && isAdmin && updated.status === "active") {
       try {
         await saveVerifiedSpecFromVehicle(updated)
       } catch (e) {

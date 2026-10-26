@@ -35,7 +35,8 @@ export default function AdminVehicleActions({ vehicleId, currentStatus }: { vehi
     }
   }
 
-  if (currentStatus !== 'pending') {
+  // También se puede aprobar o rechazar antes de que termine la revisión automática
+  if (currentStatus !== 'pending' && currentStatus !== 'reviewing') {
     return (
       <span className="text-sm text-gray-500">
         {currentStatus === 'active' ? 'Aprobado' : currentStatus === 'rejected' ? 'Rechazado' : currentStatus}

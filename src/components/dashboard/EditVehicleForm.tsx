@@ -8,6 +8,7 @@ import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
 import Button from '@/components/ui/Button'
 import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
+import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
 import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
@@ -289,6 +290,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
 
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Fotos</h3>
+          <PhotoGuide uploaded={images.length} uploading={uploading} onUpload={() => fileInputRef.current?.click()} />
           <div
             className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 transition-colors cursor-pointer relative"
             onDragOver={(e) => e.preventDefault()}
@@ -345,7 +347,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
 
         {!isAdmin && (
           <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md text-sm">
-            Al guardar los cambios, el vehículo pasará a revisión y quedará oculto hasta ser aprobado.
+            Al guardar los cambios revisaremos el anuncio y las fotos. Si todo está en orden se publica automáticamente en unos minutos; si encontramos datos de contacto, enlaces o algo fuera de lugar, lo revisará un administrador.
           </div>
         )}
 

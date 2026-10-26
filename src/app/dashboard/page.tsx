@@ -76,14 +76,14 @@ export default async function DashboardPage() {
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
                           v.status === "active" ? "bg-blue-100 text-blue-700" : 
-                          v.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                          v.status === "pending" || v.status === "reviewing" ? "bg-yellow-100 text-yellow-800" :
                           v.status === "rejected" ? "bg-red-100 text-red-800" :
                           v.status === "sold" ? "bg-blue-100 text-blue-800" :
                           "bg-gray-100 text-gray-700"
                         }`}
                       >
                         {v.status === "active" ? "Activo" : 
-                         v.status === "pending" ? "Pendiente" :
+                         v.status === "pending" || v.status === "reviewing" ? "En revisión" :
                          v.status === "rejected" ? "Rechazado" :
                          v.status === "sold" ? "Vendido" : "Pausado"}
                       </span>

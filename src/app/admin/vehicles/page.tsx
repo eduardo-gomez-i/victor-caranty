@@ -24,12 +24,9 @@ export default async function AdminVehiclesPage() {
     }
   })
 
-  // Sort manually to ensure 'pending' is at the top
-  const sortedVehicles = [...vehicles].sort((a, b) => {
-    if (a.status === 'pending' && b.status !== 'pending') return -1;
-    if (a.status !== 'pending' && b.status === 'pending') return 1;
-    return 0;
-  });
+  // Primero los que necesitan al admin, luego los que están en revisión automática
+  const priority = (status: string) => (status === 'pending' ? 0 : status === 'reviewing' ? 1 : 2)
+  const sortedVehicles = [...vehicles].sort((a, b) => priority(a.status) - priority(b.status))
 
   return (
     <div className="space-y-6">
@@ -67,20 +64,34 @@ export default async function AdminVehiclesPage() {
                   <TableCell>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       vehicle.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      vehicle.status === 'reviewing' ? 'bg-purple-100 text-purple-800' :
                       vehicle.status === 'active' ? 'bg-blue-100 text-blue-800' :
                       vehicle.status === 'rejected' ? 'bg-red-100 text-red-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {vehicle.status === 'pending' ? 'Pendiente' : 
+                       vehicle.status === 'reviewing' ? 'Revisión automática' : 
                        vehicle.status === 'active' ? 'Activo' : 
                        vehicle.status === 'rejected' ? 'Rechazado' : vehicle.status}
                     </span>
+                    {vehicle.status === 'pending' && Array.isArray(vehicle.moderationFlags) && vehicle.moderationFlags.length > 0 && (
+                      <ul className="mt-1 text-xs text-amber-700 list-disc pl-4 max-w-xs">
+                        {(vehicle.moderationFlags as string[]).map((reason) => (
+                          <li key={reason}>{reason}</li>
+                        ))}
+                      </ul>
+                    )}
                   </TableCell>
                   <TableCell className="text-gray-700">
                     {new Date(vehicle.createdAt).toLocaleDateString('es-MX')}
                   </TableCell>
                   <TableCell className="text-right">
-                    <AdminVehicleActions vehicleId={vehicle.id} currentStatus={vehicle.status} />
+                    <div className="flex items-center justify-end gap-3">
+                      <Link href={`/admin/vehicles/${vehicle.id}/photos`} className="text-sm text-blue-600 hover:underline">
+                        Fotos
+                      </Link>
+                      <AdminVehicleActions vehicleId={vehicle.id} currentStatus={vehicle.status} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

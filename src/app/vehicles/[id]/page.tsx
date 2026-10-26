@@ -6,7 +6,10 @@ import Footer from '@/components/layout/Footer'
 import ContactSellerForm from '@/components/vehicles/ContactSellerForm'
 import VehicleImageGallery from '@/components/vehicles/VehicleImageGallery'
 import { auth } from '@/auth'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Download, Images } from 'lucide-react'
+import Link from 'next/link'
+import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
+import { exportPhotoUrls } from '@/lib/photo-ai/export'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -62,21 +65,47 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// Transparencia: si alguna foto publicada tiene limpieza digital de suciedad, se avisa en el anuncio.
+async function hasCleanedPhotos(urls: string[]) {
+  if (urls.length === 0) return false
+  const jobs = await prisma.photoJob.findMany({
+    where: { status: 'approved', processedUrl: { in: urls } },
+    select: { options: true },
+  })
+  return jobs.some((j) => (j.options as { clean?: boolean } | null)?.clean === true)
+}
+
 export default async function VehicleDetail({ params }: Props) {
   const { id } = await params
   const vehicle = await getVehicle(id)
+  const cleanedPhotos = await hasCleanedPhotos(vehicle.images.map((i) => i.url))
+  const session = await auth()
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const exportPhotos = isAdmin ? await exportPhotoUrls(vehicle.id) : []
+  const editedCount = exportPhotos.filter((p) => p.edited).length
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Navbar />
       <div className="container mx-auto px-4 pt-10 pb-8">
+        {vehicle.status === 'reviewing' && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+            <div>
+              <h3 className="text-blue-800 font-medium">Estamos revisando tus fotos</h3>
+              <p className="text-blue-700 text-sm mt-1">
+                Cubrimos la placa y revisamos que todo esté en orden. Si no encontramos ningún problema, tu anuncio se publicará automáticamente en unos minutos.
+              </p>
+            </div>
+          </div>
+        )}
         {vehicle.status === 'pending' && (
           <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 shrink-0" />
             <div>
               <h3 className="text-yellow-800 font-medium">Vehículo en revisión</h3>
               <p className="text-yellow-700 text-sm mt-1">
-                Este vehículo ha sido enviado para su aprobación. Actualmente solo es visible para ti y para los administradores. Una vez aprobado, será visible para todo el público.
+                Encontramos algo que un administrador debe revisar (por ejemplo, datos de contacto, enlaces o redes sociales en la descripción o en las fotos). Por ahora solo lo ves tú y los administradores; una vez aprobado será visible para todo el público.
               </p>
             </div>
           </div>
@@ -92,9 +121,42 @@ export default async function VehicleDetail({ params }: Props) {
             </div>
           </div>
         )}
+        {isAdmin && (
+          <div className="mb-6 bg-white border border-gray-200 rounded-lg p-4">
+            <h3 className="font-medium text-gray-900">Publicar en otros medios</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Copia la descripción (con el pie de EasyMotores) y descarga las fotos
+              {exportPhotos.length > 0 && <> ({editedCount} de {exportPhotos.length} con ajustes de IA)</>}.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <CopyDescriptionButton description={vehicle.description ?? ''} />
+              {exportPhotos.length > 0 && (
+                <a
+                  href={`/api/admin/vehicles/${vehicle.id}/photos/download`}
+                  className="inline-flex h-9 items-center rounded-xl border border-border px-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Descargar fotos (.zip)
+                </a>
+              )}
+              <Link
+                href={`/admin/vehicles/${vehicle.id}/photos`}
+                className="inline-flex h-9 items-center rounded-xl border border-border px-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
+              >
+                <Images className="mr-2 h-4 w-4" />
+                Revisar fotos IA
+              </Link>
+            </div>
+          </div>
+        )}
         <div className="grid md:grid-cols-2 gap-8">
           <div className="min-w-0">
             <VehicleImageGallery images={vehicle.images} alt={`${vehicle.make} ${vehicle.model}`} />
+            {cleanedPhotos && (
+              <p className="mt-2 text-xs text-gray-500">
+                Algunas fotos de interiores tienen limpieza digital de polvo y suciedad. No se ocultan manchas, desgaste ni daños.
+              </p>
+            )}
           </div>
           
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit min-w-0">

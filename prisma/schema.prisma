@@ -88,7 +88,10 @@ model Vehicle {
   price       Decimal  @db.Decimal(10, 2)
   description String?  @db.Text
   type        String?  @db.VarChar(50)
-  status      String   @default("active") // active, sold, paused
+  // active, sold, paused, pending (revisión del admin), reviewing (revisión automática de fotos), rejected
+  status      String   @default("active")
+  // Motivos por los que la publicación automática se detuvo y pasó a revisión del admin
+  moderationFlags Json? @map("moderation_flags")
   state       String?  @db.VarChar(50)
   location    Json?
   isActive    Boolean  @default(true) @map("is_active")
@@ -140,4 +143,34 @@ model VehicleSpec {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("vehicle_specs")
+}
+
+// Procesamiento de fotos con IA (placa de marca, quitar personas y objetos).
+// Se liga a la foto por URL porque las imágenes de un vehículo se recrean al editarlo.
+model PhotoJob {
+  id           String   @id @default(uuid())
+  // sha256 de originalUrl: la URL puede pasar el límite de índice de MySQL
+  urlKey       String   @unique @map("url_key") @db.VarChar(64)
+  originalUrl  String   @map("original_url") @db.VarChar(500)
+  processedUrl String?  @map("processed_url") @db.VarChar(500)
+  // pending | processing | ready | approved | original | unchanged | failed
+  status       String   @default("pending") @db.VarChar(20)
+  plateFound   Boolean  @default(false) @map("plate_found")
+  removedItems Json?    @map("removed_items")
+  // % de la foto reconstruido por la IA; alto = revisar con cuidado
+  replacedPct  Float?   @map("replaced_pct")
+  // Retoques opcionales pedidos por el admin: { clean: limpiar suciedad suelta, deglare: reducir destello del sol }
+  options      Json?
+  // Lo que la detección sugiere ofrecer: { dirt, glare, interior }
+  suggestions  Json?
+  // Problemas de contenido en la foto (datos de contacto, marcas de agua, no es un auto…); detienen la publicación automática
+  flags        Json?
+  costUsd      Decimal? @map("cost_usd") @db.Decimal(10, 5)
+  attempts     Int      @default(0)
+  error        String?  @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("photo_jobs")
 }

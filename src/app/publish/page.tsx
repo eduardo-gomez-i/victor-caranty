@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
+import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
 import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
@@ -335,6 +336,7 @@ export default function PublishPage() {
               {/* Image Upload */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Fotos</h3>
+                <PhotoGuide uploaded={images.length} uploading={uploading} onUpload={() => fileInputRef.current?.click()} />
                 <div
                   className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 transition-colors cursor-pointer relative"
                   onDragOver={(e) => e.preventDefault()}
@@ -351,7 +353,7 @@ export default function PublishPage() {
                   <div className="space-y-1 text-center">
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     <div className="flex text-sm text-gray-600">
-                      <span className="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">Subir archivos</span>
+                      <span className="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">Subir fotos</span>
                       <p className="pl-1">o arrastra y suelta</p>
                     </div>
                     <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>

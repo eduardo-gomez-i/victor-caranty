@@ -105,11 +105,13 @@ export default async function AdminDashboardPage() {
                         <TableCell>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             v.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            v.status === 'reviewing' ? 'bg-purple-100 text-purple-800' :
                             v.status === 'active' ? 'bg-blue-100 text-blue-800' :
                             v.status === 'rejected' ? 'bg-red-100 text-red-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {v.status === 'pending' ? 'Pendiente' : 
+                             v.status === 'reviewing' ? 'Revisión automática' : 
                              v.status === 'active' ? 'Activo' : 
                              v.status === 'rejected' ? 'Rechazado' : v.status}
                           </span>
