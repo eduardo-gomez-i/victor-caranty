@@ -68,7 +68,7 @@ export default async function AdminVehiclePhotosPage({ params }: { params: Promi
           Fotos: {vehicle.make} {vehicle.model} {vehicle.year}
         </h1>
         <p className="text-gray-600 mt-1">
-          La IA cubre la placa y quita personas u objetos. Hasta que apruebes una foto editada se publica la original.
+          La IA cubre la placa y quita personas u objetos. Las fotos editadas se publican solas; solo quedan “Por revisar” las que tienen alertas o una reconstrucción grande (mientras tanto se muestra la original).
         </p>
         {!photoAiEnabled() && (
           <p className="text-sm text-amber-700 mt-2">GEMINI_API_KEY no está configurada: el procesamiento está desactivado.</p>

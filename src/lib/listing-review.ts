@@ -98,6 +98,23 @@ export async function finalizeAutoReview(vehicleId: string, origin?: string) {
   }
 }
 
+// Fuera de la revisión automática (anuncios del admin, ya publicados o reprocesos), la foto editada
+// se publica sola si no hay alertas de contenido ni una reconstrucción grande; si no, espera al admin.
+export async function autoApproveSafePhoto(jobId: string) {
+  const job = await prisma.photoJob.findUnique({ where: { id: jobId } })
+  if (!job || job.status !== "ready" || !job.processedUrl) return
+  if (parseFlags(job.flags).length > 0 || (job.replacedPct ?? 0) > AUTO_REVIEW_MAX_REPLACED_PCT) return
+  const images = await prisma.image.findMany({
+    where: { url: job.originalUrl, vehicle: { status: { not: "reviewing" } } },
+    select: { id: true },
+  })
+  if (images.length === 0) return
+  await prisma.$transaction([
+    prisma.image.updateMany({ where: { id: { in: images.map((i) => i.id) } }, data: { url: job.processedUrl } }),
+    prisma.photoJob.update({ where: { id: job.id }, data: { status: "approved" } }),
+  ])
+}
+
 // Vehículos en revisión automática que usan esta foto
 export async function finalizeVehiclesUsingPhoto(originalUrl: string) {
   const images = await prisma.image.findMany({
