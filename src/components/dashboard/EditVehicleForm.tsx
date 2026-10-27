@@ -11,6 +11,7 @@ import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
 import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
+import { PhotoAiBadge, PhotoAiWaitNotice, usePhotoAi } from '@/components/vehicles/usePhotoAi'
 import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
@@ -64,6 +65,9 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
 
   const sortedImages = [...vehicle.images].sort((a, b) => a.displayOrder - b.displayOrder)
   const [images, setImages] = useState<string[]>(sortedImages.map(i => i.url))
+  const photoAi = usePhotoAi(images)
+  const [skipAiWait, setSkipAiWait] = useState(false)
+  const waitingAi = photoAi.processing > 0 && !skipAiWait
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -326,7 +330,8 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
               {images.map((url, index) => (
                 <div key={url} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+                  <img src={photoAi.photos[url]?.editedUrl ?? url} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+                  {photoAi.enabled && <PhotoAiBadge state={photoAi.photos[url]?.state} />}
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
@@ -357,6 +362,8 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
           </div>
         )}
 
+        {waitingAi && <PhotoAiWaitNotice processing={photoAi.processing} total={images.length} onSkip={() => setSkipAiWait(true)} />}
+
         <div className="flex gap-3 pt-4">
           <Button
             type="button"
@@ -366,7 +373,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isSubmitting || uploading} isLoading={isSubmitting} fullWidth>
+          <Button type="submit" disabled={isSubmitting || uploading || waitingAi} isLoading={isSubmitting} fullWidth>
             Guardar cambios
           </Button>
         </div>

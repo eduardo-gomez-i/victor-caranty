@@ -15,6 +15,8 @@ const MAX_ATTEMPTS = 2
 const MAX_RESIDUAL = 25
 // Un trabajo en "processing" más tiempo que esto se considera huérfano (servidor reiniciado)
 const STALE_MS = 10 * 60_000
+// Fotos en paralelo: un anuncio de 10 fotos queda listo en pocos minutos sin saturar el servidor
+const CONCURRENCY = 3
 
 export function photoAiEnabled() {
   return Boolean(process.env.GEMINI_API_KEY)
@@ -41,15 +43,20 @@ export async function enqueuePhotos(urls: string[]) {
   kickWorker()
 }
 
-// Un solo procesador por proceso de Node; procesa la cola de uno en uno.
+// Un solo procesador por proceso de Node, con CONCURRENCY fotos a la vez.
 const state = globalThis as unknown as { __photoWorkerRunning?: boolean }
 
 export function kickWorker() {
   if (!photoAiEnabled() || state.__photoWorkerRunning) return
   state.__photoWorkerRunning = true
-  void runQueue().finally(() => {
-    state.__photoWorkerRunning = false
-  })
+  void runQueue()
+    .catch((error) => console.error("photo-ai: la cola se detuvo:", error))
+    .finally(async () => {
+      state.__photoWorkerRunning = false
+      // Fotos que llegaron justo cuando la cola terminaba
+      const pending = await prisma.photoJob.count({ where: { status: "pending" } }).catch(() => 0)
+      if (pending > 0) kickWorker()
+    })
 }
 
 async function runQueue() {
@@ -57,6 +64,10 @@ async function runQueue() {
     where: { status: "processing", updatedAt: { lt: new Date(Date.now() - STALE_MS) } },
     data: { status: "pending" },
   })
+  await Promise.all(Array.from({ length: CONCURRENCY }, drain))
+}
+
+async function drain() {
   for (;;) {
     const job = await prisma.photoJob.findFirst({ where: { status: "pending" }, orderBy: { createdAt: "asc" } })
     if (!job) return

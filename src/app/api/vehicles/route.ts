@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { requireRole } from '@/lib/auth'
 import { enqueuePhotos, photoAiEnabled } from '@/lib/photo-ai/worker'
-import { afterListingSaved, initialListingStatus, listingTextReasons } from '@/lib/listing-review'
+import { afterListingSaved, applyFinishedEdits, initialListingStatus, listingTextReasons } from '@/lib/listing-review'
 import { saveVerifiedSpecFromVehicle } from '@/lib/vehicle-specs'
 
 export const runtime = 'nodejs'
@@ -105,6 +105,11 @@ export async function POST(request: NextRequest) {
 
     // La ficha verificada solo la crea un admin (al publicar o aprobar), no la publicación automática
     if (user.role === 'ADMIN') {
+      try {
+        await applyFinishedEdits(vehicle.images.map((i) => i.url))
+      } catch (e) {
+        console.error('No se pudieron publicar las fotos editadas:', e)
+      }
       try {
         await saveVerifiedSpecFromVehicle(vehicle)
       } catch (e) {

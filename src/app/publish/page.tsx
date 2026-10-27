@@ -13,6 +13,7 @@ import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
 import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
+import { PhotoAiBadge, PhotoAiWaitNotice, usePhotoAi } from '@/components/vehicles/usePhotoAi'
 import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
@@ -55,6 +56,9 @@ export default function PublishPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [images, setImages] = useState<string[]>([])
+  const photoAi = usePhotoAi(images)
+  const [skipAiWait, setSkipAiWait] = useState(false)
+  const waitingAi = photoAi.processing > 0 && !skipAiWait
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -383,10 +387,11 @@ export default function PublishPage() {
                       <div key={index} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={url}
+                          src={photoAi.photos[url]?.editedUrl ?? url}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
+                        {photoAi.enabled && <PhotoAiBadge state={photoAi.photos[url]?.state} />}
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
@@ -414,7 +419,8 @@ export default function PublishPage() {
 
               {/* Submit Button */}
               <div className="pt-4">
-                <Button type="submit" disabled={isSubmitting || uploading} isLoading={isSubmitting} fullWidth>
+                {waitingAi && <PhotoAiWaitNotice processing={photoAi.processing} total={images.length} onSkip={() => setSkipAiWait(true)} />}
+                <Button type="submit" disabled={isSubmitting || uploading || waitingAi} isLoading={isSubmitting} fullWidth>
                   Publicar vehículo
                 </Button>
               </div>

@@ -98,12 +98,27 @@ export async function finalizeAutoReview(vehicleId: string, origin?: string) {
   }
 }
 
+// Edición que se puede publicar sin que la vea una persona
+export function isSafeEdit(job: { flags: unknown; replacedPct: number | null }) {
+  return parseFlags(job.flags).length === 0 && (job.replacedPct ?? 0) <= AUTO_REVIEW_MAX_REPLACED_PCT
+}
+
+// Al guardar un anuncio fuera de la revisión automática: publica las ediciones que ya terminaron
+// (las fotos se procesan desde que se suben en el formulario).
+export async function applyFinishedEdits(urls: string[]) {
+  const jobs = await prisma.photoJob.findMany({
+    where: { urlKey: { in: urls.map(urlKey) }, status: "ready" },
+    select: { id: true },
+  })
+  for (const job of jobs) await autoApproveSafePhoto(job.id)
+}
+
 // Fuera de la revisión automática (anuncios del admin, ya publicados o reprocesos), la foto editada
 // se publica sola si no hay alertas de contenido ni una reconstrucción grande; si no, espera al admin.
 export async function autoApproveSafePhoto(jobId: string) {
   const job = await prisma.photoJob.findUnique({ where: { id: jobId } })
   if (!job || job.status !== "ready" || !job.processedUrl) return
-  if (parseFlags(job.flags).length > 0 || (job.replacedPct ?? 0) > AUTO_REVIEW_MAX_REPLACED_PCT) return
+  if (!isSafeEdit(job)) return
   const images = await prisma.image.findMany({
     where: { url: job.originalUrl, vehicle: { status: { not: "reviewing" } } },
     select: { id: true },

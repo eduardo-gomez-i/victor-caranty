@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import fs from 'fs/promises'
 import { requireAuth } from '@/lib/auth'
+import { enqueuePhotos } from '@/lib/photo-ai/worker'
 
 export const runtime = 'nodejs'
 
@@ -49,6 +50,14 @@ export async function POST(request: NextRequest) {
     await fs.chmod(filepath, 0o644)
 
     const url = `/uploads/${filename}`
+    // La edición con IA arranca desde que se sube, para que al publicar ya esté lista
+    if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+      try {
+        await enqueuePhotos([url])
+      } catch (e) {
+        console.error('No se pudo encolar la foto para IA:', e)
+      }
+    }
     return NextResponse.json({ url })
   } catch (error) {
     console.error(error)

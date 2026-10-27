@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 import { z } from "zod"
 import { Prisma } from "@prisma/client"
 import { enqueuePhotos, photoAiEnabled } from "@/lib/photo-ai/worker"
-import { afterListingSaved, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
+import { afterListingSaved, applyFinishedEdits, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
 import { saveVerifiedSpecFromVehicle } from "@/lib/vehicle-specs"
 
 export const runtime = "nodejs"
@@ -131,6 +131,14 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         await afterListingSaved(id, review.reasons, request.nextUrl.origin)
       } catch (e) {
         console.error("No se pudo completar la revisión automática:", e)
+      }
+    }
+
+    if (isAdmin && data.images !== undefined) {
+      try {
+        await applyFinishedEdits(data.images)
+      } catch (e) {
+        console.error("No se pudieron publicar las fotos editadas:", e)
       }
     }
 
