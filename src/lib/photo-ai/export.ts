@@ -6,7 +6,7 @@ import { urlKey } from './keys'
 // Fotos de un vehículo para publicarlo en otros medios: la versión editada por la IA
 // (placa cubierta, objetos quitados) cuando existe y el admin no eligió la original.
 export async function exportPhotoUrls(vehicleId: string) {
-  const images = await prisma.image.findMany({ where: { vehicleId }, orderBy: { displayOrder: 'asc' } })
+  const images = await prisma.image.findMany({ where: { vehicleId, hidden: false }, orderBy: { displayOrder: 'asc' } })
   const urls = images.map((i) => i.url)
   const jobs = await prisma.photoJob.findMany({
     where: { OR: [{ urlKey: { in: urls.map(urlKey) } }, { processedUrl: { in: urls } }] },

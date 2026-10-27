@@ -12,6 +12,8 @@ const LARGE_AREA_PCT = 5
 export interface PhotoReview {
   index: number
   currentUrl: string
+  // Oculta al público hasta que el admin la apruebe
+  hidden: boolean
   job: {
     id: string
     status: string
@@ -83,7 +85,14 @@ export default function PhotoReviewCard({ photo }: { photo: PhotoReview }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-border p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="font-medium text-gray-900">Foto {photo.index + 1}</div>
+        <div className="flex items-center gap-2 font-medium text-gray-900">
+          Foto {photo.index + 1}
+          {photo.hidden && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              Oculta al público
+            </span>
+          )}
+        </div>
         {status ? (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.className}`}>
             {status.label}
@@ -153,10 +162,10 @@ export default function PhotoReviewCard({ photo }: { photo: PhotoReview }) {
               Aprobar editada
             </Button>
           )}
-          {['ready', 'approved'].includes(job.status) && (
+          {(['ready', 'approved'].includes(job.status) || photo.hidden) && (
             <Button size="sm" variant="outline" onClick={() => act('original')} isLoading={loading === 'original'} disabled={!!loading}>
               {loading !== 'original' && <Undo2 className="mr-1.5 h-4 w-4" />}
-              Usar original
+              {photo.hidden ? 'Publicar original' : 'Usar original'}
             </Button>
           )}
           {/* Limpieza solo en interiores: el exterior se publica tal cual */}

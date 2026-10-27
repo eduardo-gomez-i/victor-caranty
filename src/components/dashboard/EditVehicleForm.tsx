@@ -11,7 +11,7 @@ import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
 import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
-import { PhotoAiBadge, PhotoAiWaitNotice, usePhotoAi } from '@/components/vehicles/usePhotoAi'
+import { PhotoAiBadge, PhotoAiProgress, usePhotoAi } from '@/components/vehicles/usePhotoAi'
 import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
@@ -66,8 +66,6 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
   const sortedImages = [...vehicle.images].sort((a, b) => a.displayOrder - b.displayOrder)
   const [images, setImages] = useState<string[]>(sortedImages.map(i => i.url))
   const photoAi = usePhotoAi(images)
-  const [skipAiWait, setSkipAiWait] = useState(false)
-  const waitingAi = photoAi.processing > 0 && !skipAiWait
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -356,7 +354,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
 
         {!isAdmin && (
           <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md text-sm">
-            Al guardar los cambios revisaremos el anuncio y las fotos. Si todo está en orden se publica automáticamente en unos minutos; si encontramos datos de contacto, enlaces o algo fuera de lugar, lo revisará un administrador.
+            Al guardar los cambios revisaremos el anuncio y las fotos. Si todo está en orden se publica automáticamente en unos minutos; si encontramos datos de contacto o enlaces lo revisará un administrador, y las fotos fuera de lugar se ocultan hasta que las apruebe.
           </div>
         )}
 
@@ -366,7 +364,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
           </div>
         )}
 
-        {waitingAi && <PhotoAiWaitNotice processing={photoAi.processing} total={images.length} onSkip={() => setSkipAiWait(true)} />}
+        {photoAi.processing > 0 && <PhotoAiProgress processing={photoAi.processing} total={images.length} />}
 
         <div className="flex gap-3 pt-4">
           <Button
@@ -377,7 +375,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isSubmitting || uploading || waitingAi} isLoading={isSubmitting} fullWidth>
+          <Button type="submit" disabled={isSubmitting || uploading} isLoading={isSubmitting} fullWidth>
             Guardar cambios
           </Button>
         </div>

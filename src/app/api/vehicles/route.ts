@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { requireRole } from '@/lib/auth'
 import { enqueuePhotos, photoAiEnabled } from '@/lib/photo-ai/worker'
-import { afterListingSaved, applyFinishedEdits, initialListingStatus, listingTextReasons } from '@/lib/listing-review'
+import { afterListingSaved, initialListingStatus, listingTextReasons } from '@/lib/listing-review'
 import { saveVerifiedSpecFromVehicle } from '@/lib/vehicle-specs'
 
 export const runtime = 'nodejs'
@@ -52,7 +52,8 @@ export async function GET(request: NextRequest) {
     where,
     include: {
       images: {
-        where: { isPrimary: true },
+        where: { hidden: false },
+        orderBy: { displayOrder: 'asc' },
         take: 1
       }
     },
@@ -72,11 +73,14 @@ export async function POST(request: NextRequest) {
     }
     const { images, ...vehicleData } = validation.data
 
-    // El admin publica directo. El vendedor se publica solo si el texto y las fotos pasan la revisión automática.
-    const review =
-      user.role === 'ADMIN'
-        ? { status: 'active', reasons: [] as string[] }
-        : initialListingStatus(listingTextReasons(vehicleData), images?.length ?? 0, photoAiEnabled())
+    // Nadie se publica antes de que la IA termine las fotos. Al admin no se le revisa el texto.
+    const isAdmin = user.role === 'ADMIN'
+    const review = initialListingStatus(
+      isAdmin ? [] : listingTextReasons(vehicleData),
+      images?.length ?? 0,
+      photoAiEnabled(),
+      isAdmin
+    )
 
     const vehicle = await prisma.vehicle.create({
       data: {
@@ -104,23 +108,18 @@ export async function POST(request: NextRequest) {
     }
 
     // La ficha verificada solo la crea un admin (al publicar o aprobar), no la publicación automática
-    if (user.role === 'ADMIN') {
-      try {
-        await applyFinishedEdits(vehicle.images.map((i) => i.url))
-      } catch (e) {
-        console.error('No se pudieron publicar las fotos editadas:', e)
-      }
+    if (isAdmin) {
       try {
         await saveVerifiedSpecFromVehicle(vehicle)
       } catch (e) {
         console.error('No se pudo guardar la ficha verificada:', e)
       }
-    } else {
-      try {
-        await afterListingSaved(vehicle.id, review.reasons, request.nextUrl.origin)
-      } catch (e) {
-        console.error('No se pudo completar la revisión automática:', e)
-      }
+    }
+    // Las fotos se procesan desde que se subieron: si ya terminaron, se publica en este momento
+    try {
+      await afterListingSaved(vehicle.id, review.reasons, request.nextUrl.origin)
+    } catch (e) {
+      console.error('No se pudo completar la revisión automática:', e)
     }
 
     return NextResponse.json(vehicle, { status: 201 })

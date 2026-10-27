@@ -73,7 +73,7 @@ export default async function SearchPage({
 
   const vehicles = await prisma.vehicle.findMany({
     where,
-    include: { images: { where: { isPrimary: true }, take: 1 } },
+    include: { images: { where: { hidden: false }, orderBy: { displayOrder: 'asc' }, take: 1 } },
     orderBy: { createdAt: 'desc' },
   })
 

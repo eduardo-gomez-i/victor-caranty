@@ -8,6 +8,7 @@ import VehicleImageGallery from '@/components/vehicles/VehicleImageGallery'
 import { auth } from '@/auth'
 import { AlertCircle, Download, Images } from 'lucide-react'
 import Link from 'next/link'
+import AutoRefresh from '@/components/admin/AutoRefresh'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
 import { exportPhotoUrls } from '@/lib/photo-ai/export'
 
@@ -19,7 +20,7 @@ async function getVehicle(id: string) {
   const session = await auth()
   const vehicle = await prisma.vehicle.findUnique({
     where: { id },
-    include: { images: true, user: { select: { id: true, name: true, phone: true } } }
+    include: { images: { where: { hidden: false }, orderBy: { displayOrder: 'asc' } }, user: { select: { id: true, name: true, phone: true } } }
   })
   
   if (!vehicle) notFound()
@@ -92,9 +93,10 @@ export default async function VehicleDetail({ params }: Props) {
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
             <div>
-              <h3 className="text-blue-800 font-medium">Estamos revisando tus fotos</h3>
+              <AutoRefresh active intervalMs={8000} />
+              <h3 className="text-blue-800 font-medium">Estamos editando tus fotos con IA</h3>
               <p className="text-blue-700 text-sm mt-1">
-                Cubrimos la placa y revisamos que todo esté en orden. Si no encontramos ningún problema, tu anuncio se publicará automáticamente en unos minutos.
+                Cubrimos la placa y quitamos objetos. Tu anuncio será visible para el público en cuanto terminen, normalmente en uno o dos minutos. Las fotos que no correspondan al auto se ocultarán hasta que las revise un administrador.
               </p>
             </div>
           </div>

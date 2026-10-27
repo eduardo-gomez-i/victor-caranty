@@ -13,7 +13,7 @@ import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
 import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
-import { PhotoAiBadge, PhotoAiWaitNotice, usePhotoAi } from '@/components/vehicles/usePhotoAi'
+import { PhotoAiBadge, PhotoAiProgress, usePhotoAi } from '@/components/vehicles/usePhotoAi'
 import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
@@ -57,8 +57,6 @@ export default function PublishPage() {
   const [uploading, setUploading] = useState(false)
   const [images, setImages] = useState<string[]>([])
   const photoAi = usePhotoAi(images)
-  const [skipAiWait, setSkipAiWait] = useState(false)
-  const waitingAi = photoAi.processing > 0 && !skipAiWait
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -419,8 +417,8 @@ export default function PublishPage() {
 
               {/* Submit Button */}
               <div className="pt-4">
-                {waitingAi && <PhotoAiWaitNotice processing={photoAi.processing} total={images.length} onSkip={() => setSkipAiWait(true)} />}
-                <Button type="submit" disabled={isSubmitting || uploading || waitingAi} isLoading={isSubmitting} fullWidth>
+                {photoAi.processing > 0 && <PhotoAiProgress processing={photoAi.processing} total={images.length} />}
+                <Button type="submit" disabled={isSubmitting || uploading} isLoading={isSubmitting} fullWidth>
                   Publicar vehículo
                 </Button>
               </div>

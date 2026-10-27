@@ -1,7 +1,7 @@
 import fs from "fs/promises"
 import path from "path"
 import prisma from "@/lib/prisma"
-import { autoApproveSafePhoto, finalizeVehiclesUsingPhoto } from "@/lib/listing-review"
+import { finalizeVehiclesUsingPhoto } from "@/lib/listing-review"
 import { urlKey } from "./keys"
 import { Box, Detection, EditOptions, GeminiClient } from "./gemini"
 import { alignEdit, applyPlate, blendEdits, blurBoxes, downscaledJpeg, encodeJpeg, loadRaw } from "./compose"
@@ -99,11 +99,6 @@ async function drain() {
       await finalizeVehiclesUsingPhoto(job.originalUrl)
     } catch (error) {
       console.error("photo-ai: no se pudo cerrar la revisión automática:", error)
-    }
-    try {
-      await autoApproveSafePhoto(job.id)
-    } catch (error) {
-      console.error("photo-ai: no se pudo publicar la foto editada:", error)
     }
   }
 }

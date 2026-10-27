@@ -84,8 +84,8 @@ export function PhotoAiBadge({ state }: { state?: PhotoAiState }) {
   return null
 }
 
-// Aviso junto al botón de publicar mientras la IA termina de editar las fotos
-export function PhotoAiWaitNotice({ processing, total, onSkip }: { processing: number; total: number; onSkip: () => void }) {
+// Aviso junto al botón de publicar mientras la IA edita las fotos (no bloquea la publicación)
+export function PhotoAiProgress({ processing, total }: { processing: number; total: number }) {
   return (
     <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
       <p className="flex items-center gap-2 font-medium">
@@ -93,11 +93,8 @@ export function PhotoAiWaitNotice({ processing, total, onSkip }: { processing: n
         Editando fotos con IA: {total - processing} de {total} listas
       </p>
       <p className="mt-1">
-        Cubrimos la placa y quitamos objetos para que tu anuncio se publique con las fotos ya editadas. Tarda unos segundos por foto.
+        Puedes publicar ya: las fotos se terminan de editar en segundo plano y tu anuncio será visible para el público en cuanto estén listas.
       </p>
-      <button type="button" onClick={onSkip} className="mt-2 text-blue-700 underline hover:text-blue-900">
-        Publicar sin esperar (las fotos se reemplazan solas al terminar)
-      </button>
     </div>
   )
 }

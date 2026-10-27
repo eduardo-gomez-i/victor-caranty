@@ -20,7 +20,8 @@ export default async function AdminVehiclesPage() {
     include: {
       user: {
         select: { name: true, email: true }
-      }
+      },
+      _count: { select: { images: { where: { hidden: true } } } }
     }
   })
 
@@ -74,6 +75,11 @@ export default async function AdminVehiclesPage() {
                        vehicle.status === 'active' ? 'Activo' : 
                        vehicle.status === 'rejected' ? 'Rechazado' : vehicle.status}
                     </span>
+                    {vehicle._count.images > 0 && (
+                      <Link href={`/admin/vehicles/${vehicle.id}/photos`} className="mt-1 block text-xs text-red-700 hover:underline">
+                        {vehicle._count.images} foto(s) oculta(s) por revisar
+                      </Link>
+                    )}
                     {vehicle.status === 'pending' && Array.isArray(vehicle.moderationFlags) && vehicle.moderationFlags.length > 0 && (
                       <ul className="mt-1 text-xs text-amber-700 list-disc pl-4 max-w-xs">
                         {(vehicle.moderationFlags as string[]).map((reason) => (

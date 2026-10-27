@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 import { z } from "zod"
 import { Prisma } from "@prisma/client"
 import { enqueuePhotos, photoAiEnabled } from "@/lib/photo-ai/worker"
-import { afterListingSaved, applyFinishedEdits, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
+import { afterListingSaved, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
 import { saveVerifiedSpecFromVehicle } from "@/lib/vehicle-specs"
 
 export const runtime = "nodejs"
@@ -62,23 +62,24 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         ? data.isActive
         : undefined
 
-    // El admin publica directo; el vendedor pasa por la revisión automática (texto y fotos)
+    // Texto (solo vendedor) y fotos pasan por la revisión automática; no es público hasta que terminen las fotos
     const isAdmin = session.user.role === "ADMIN"
     const review =
-      isFullEdit && !isAdmin
+      isFullEdit
         ? initialListingStatus(
-            listingTextReasons({
+            isAdmin ? [] : listingTextReasons({
               make: data.make ?? existing.make,
               model: data.model ?? existing.model,
               version: data.version !== undefined ? data.version : existing.version,
               description: data.description !== undefined ? data.description : existing.description,
             }),
             data.images?.length ?? (await prisma.image.count({ where: { vehicleId: id } })),
-            photoAiEnabled()
+            photoAiEnabled(),
+            isAdmin
           )
         : null
     // "reviewing" se activa hasta que las fotos nuevas estén guardadas, para no revisar las anteriores
-    const newStatus = !isFullEdit ? existing.status : isAdmin ? "active" : review!.status === "reviewing" ? "pending" : review!.status
+    const newStatus = !review ? existing.status : review.status === "reviewing" ? "pending" : review.status
 
     const updated = await prisma.vehicle.update({
       where: { id },
@@ -134,15 +135,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       }
     }
 
-    if (isAdmin && data.images !== undefined) {
-      try {
-        await applyFinishedEdits(data.images)
-      } catch (e) {
-        console.error("No se pudieron publicar las fotos editadas:", e)
-      }
-    }
-
-    if (isFullEdit && isAdmin && updated.status === "active") {
+    if (isFullEdit && isAdmin) {
       try {
         await saveVerifiedSpecFromVehicle(updated)
       } catch (e) {

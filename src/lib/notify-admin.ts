@@ -5,6 +5,8 @@ export async function notifyAdminsAboutPendingVehicle(args: {
   origin?: string
   // Por qué la publicación automática se detuvo (vacío = revisión normal)
   reasons?: string[]
+  // El vehículo ya se publicó, pero algunas fotos quedaron ocultas hasta que el admin las revise
+  hiddenPhotos?: boolean
   vehicle: {
     id: string
     make: string
@@ -45,9 +47,13 @@ export async function notifyAdminsAboutPendingVehicle(args: {
   const from = process.env.MAILGUN_FROM || `postmaster@${domain}`
   const envBaseUrl = process.env.MAILGUN_BASE_URL
   const baseUrl = (envBaseUrl || 'https://api.mailgun.net').replace(/\/+$/, '')
-  const subject = `Nuevo vehículo pendiente: ${args.vehicle.make} ${args.vehicle.model} ${args.vehicle.year}`
+  const name = `${args.vehicle.make} ${args.vehicle.model} ${args.vehicle.year}`
+  const subject = args.hiddenPhotos ? `Fotos ocultas por revisar: ${name}` : `Nuevo vehículo pendiente: ${name}`
+  const intro = args.hiddenPhotos
+    ? 'Se publicó un vehículo, pero algunas fotos quedaron ocultas al público hasta que las revises.'
+    : 'Se registró un nuevo vehículo y requiere verificación.'
   const origin = (args.origin || process.env.APP_URL || 'https://easymotores.com').replace(/\/+$/, '')
-  const adminUrl = `${origin}/admin/vehicles`
+  const adminUrl = args.hiddenPhotos ? `${origin}/admin/vehicles/${args.vehicle.id}/photos` : `${origin}/admin/vehicles`
   const vehicleUrl = `${origin}/vehicles/${args.vehicle.id}`
   const reasons = args.reasons ?? []
 
@@ -56,7 +62,7 @@ export async function notifyAdminsAboutPendingVehicle(args: {
     to,
     subject,
     text: [
-      'Se registró un nuevo vehículo y requiere verificación.',
+      intro,
       ...(reasons.length > 0 ? ['', 'Motivos de revisión:', ...reasons.map((r) => `- ${r}`)] : []),
       '',
       `Vehículo: ${args.vehicle.make} ${args.vehicle.model} ${args.vehicle.year}`,
@@ -70,7 +76,7 @@ export async function notifyAdminsAboutPendingVehicle(args: {
       `Detalle: ${vehicleUrl}`,
     ].join('\n'),
     html: [
-      '<p>Se registró un nuevo vehículo y requiere verificación.</p>',
+      `<p>${intro}</p>`,
       reasons.length > 0 ? `<p><b>Motivos de revisión:</b></p><ul>${reasons.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>` : '',
       `<ul>`,
       `<li><b>Vehículo:</b> ${args.vehicle.make} ${args.vehicle.model} ${args.vehicle.year}</li>`,

@@ -30,7 +30,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         return NextResponse.json({ error: "La foto no está lista para aprobarse" }, { status: 409 })
       }
       await prisma.$transaction([
-        prisma.image.updateMany({ where: { url: job.originalUrl }, data: { url: job.processedUrl } }),
+        prisma.image.updateMany({ where: { url: { in: [job.originalUrl, job.processedUrl] } }, data: { url: job.processedUrl, hidden: false } }),
         prisma.photoJob.update({ where: { id }, data: { status: "approved" } }),
       ])
       return NextResponse.json({ ok: true })
@@ -42,7 +42,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       : []
 
     if (action === "original") {
-      await prisma.$transaction([...restore, prisma.photoJob.update({ where: { id }, data: { status: "original" } })])
+      if (["pending", "processing"].includes(job.status)) {
+        return NextResponse.json({ error: "La foto se está procesando" }, { status: 409 })
+      }
+      // El admin decide publicar la original (también si la IA la había ocultado)
+      await prisma.$transaction([
+        ...restore,
+        prisma.image.updateMany({ where: { url: job.originalUrl }, data: { hidden: false } }),
+        prisma.photoJob.update({ where: { id }, data: { status: "original" } }),
+      ])
       return NextResponse.json({ ok: true })
     }
 
@@ -51,6 +59,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
     await prisma.$transaction([
       ...restore,
+      // Oculta mientras se reprocesa; al terminar se publica sola si no hay problemas
+      prisma.image.updateMany({ where: { url: job.originalUrl }, data: { hidden: true } }),
       prisma.photoJob.update({
         where: { id },
         data: {
