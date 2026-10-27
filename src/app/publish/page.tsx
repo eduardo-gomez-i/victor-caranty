@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Upload, X, Loader2 } from 'lucide-react'
 import Input from '@/components/ui/Input'
@@ -75,6 +76,31 @@ export default function PublishPage() {
     city: '',
     type: ''
   })
+
+  const { status: sessionStatus } = useSession()
+  useEffect(() => {
+    if (sessionStatus === 'unauthenticated') {
+      router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+    }
+  }, [sessionStatus, router])
+
+  // Datos que vienen del formulario de la página de inicio (marca, año, kilometraje)
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    const make = sp.get('make')?.trim() ?? ''
+    const year = sp.get('year') ?? ''
+    const mileage = sp.get('mileage') ?? ''
+    if (!make && !year && !mileage) return
+    const known = (VEHICLE_BRANDS as readonly string[]).includes(make)
+    // Lectura única al montar (la URL no existe en el render del servidor)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFormData((prev) => ({
+      ...prev,
+      ...(make && (known ? { make, customMake: '' } : { make: '__other__', customMake: make.slice(0, 60) })),
+      ...(/^\d{4}$/.test(year) && { year }),
+      ...(/^\d{1,7}$/.test(mileage) && { mileage }),
+    }))
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target

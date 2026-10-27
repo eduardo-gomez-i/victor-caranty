@@ -47,7 +47,8 @@
        if (loginRes?.error) {
           router.push('/login')
        } else {
-          const redirectTo = sp.get('redirect') || '/publish'
+          const target = sp.get('redirect')
+       const redirectTo = target && target.startsWith('/') && !target.startsWith('//') ? target : '/publish'
           router.push(redirectTo)
           router.refresh()
        }

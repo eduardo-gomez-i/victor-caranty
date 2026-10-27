@@ -29,7 +29,8 @@
        setError('Credenciales inválidas')
        setLoading(false)
      } else {
-       const redirectTo = sp.get('redirect') || '/publish'
+       const target = sp.get('redirect')
+       const redirectTo = target && target.startsWith('/') && !target.startsWith('//') ? target : '/publish'
        router.push(redirectTo)
        router.refresh()
      }

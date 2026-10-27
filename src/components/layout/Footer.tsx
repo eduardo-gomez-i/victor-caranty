@@ -20,7 +20,7 @@ export default function Footer() {
                   />
                 </Link>
                 <p className="text-white/80 text-sm leading-relaxed mb-6">
-                  La forma más segura y confiable de comprar y vender tu auto seminuevo. Sin riesgos, trato directo y con garantía.
+                  Conectamos compradores y vendedores de autos entre particulares, brindando seguridad, revisión general del vehículo y seguimiento de la operación hasta el cierre.
                 </p>
                 <div className="flex gap-3">
                   <a
@@ -54,18 +54,8 @@ export default function Footer() {
                 <h3 className="text-lg font-semibold mb-6 text-white">Comprar</h3>
                 <ul className="space-y-4 text-sm text-white/80">
                   <li>
-                    <Link href="/" className="hover:text-primary transition-colors">
+                    <Link href="/search" className="hover:text-primary transition-colors">
                       Ver inventario
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/publish#financiamiento" className="hover:text-primary transition-colors">
-                      Financiamiento
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/" className="hover:text-primary transition-colors">
-                      Garantía mecánica
                     </Link>
                   </li>
                   <li>

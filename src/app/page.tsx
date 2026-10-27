@@ -2,7 +2,7 @@ export const revalidate = 0
 
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
-import { ShieldCheck, Handshake, BadgeDollarSign, Building2, Car, Truck, CarFront, Eye, CalendarCheck, ArrowRight } from 'lucide-react'
+import { ShieldCheck, Handshake, BadgeDollarSign, Car, Truck, CarFront, Camera, PhoneCall, House, ArrowRight } from 'lucide-react'
 import Footer from '@/components/layout/Footer'
 import Navbar from '@/components/layout/Navbar'
 import VehicleCard from '@/components/vehicles/VehicleCard'
@@ -13,7 +13,7 @@ export default async function Home() {
     where: { isActive: true, status: 'active' },
     include: { images: { where: { hidden: false }, orderBy: { displayOrder: 'asc' }, take: 1 } },
     orderBy: { updatedAt: 'desc' },
-    take: 6,
+    take: 8,
   })
 
   return (
@@ -28,36 +28,32 @@ export default async function Home() {
         <section className="relative overflow-hidden min-h-[75vh]">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24 min-h-[75vh] flex items-center justify-center">
           <div className="max-w-4xl w-full text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
-              Compra y Vende aquí tu auto seminuevo
+            <p className="text-white/90 font-semibold">¿Tienes un auto en venta?</p>
+            <h1 className="mt-1 text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+              Publica tu auto y nosotros te ayudamos a venderlo
             </h1>
-            <p className="mt-2 text-lg text-white/90">Trato directo con 0% riesgo</p>
-            <form action="/search" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-5 gap-3 bg-white rounded-3xl md:rounded-full p-3 shadow-lg control-light">
-              <select name="make" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
+            <p className="mt-2 text-lg text-white/90">Fácil, seguro y desde la comodidad de tu casa</p>
+            {/* Empieza la publicación con los datos básicos; el formulario completo los trae ya llenos */}
+            <form action="/publish" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-3 bg-white rounded-3xl md:rounded-full p-3 shadow-lg control-light">
+              <select name="make" aria-label="Marca" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
                 <option value="">Marca</option>
                 {VEHICLE_BRANDS.map((m) => (
                   <option key={m} value={m}>{m}</option>
                 ))}
               </select>
-              <select name="year" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
+              <select name="year" aria-label="Año" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
                 <option value="">Año</option>
-                {Array.from({ length: 20 }).map((_, i) => {
-                  const y = new Date().getFullYear() - i
+                {Array.from({ length: 25 }).map((_, i) => {
+                  const y = new Date().getFullYear() + 1 - i
                   return <option key={y} value={y}>{y}</option>
                 })}
               </select>
-              <input name="maxMileage" type="number" min="0" placeholder="Kilometraje máximo" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900" />
-              <select name="maxPrice" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
-                <option value="">Presupuesto</option>
-                {[100000,150000,200000,300000,400000,500000].map((p) => (
-                  <option key={p} value={p}>Hasta ${p.toLocaleString()}</option>
-                ))}
-              </select>
+              <input name="mileage" type="number" min="0" inputMode="numeric" aria-label="Kilometraje" placeholder="Kilometraje" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900" />
               <button type="submit" className="h-14 bg-primary hover:bg-primary-700 text-white font-semibold rounded-full transition-colors px-6">
-                Busca un auto
+                Publicar mi auto
               </button>
             </form>
-            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-3">
               <div className="flex items-center gap-2 text-white">
                 <ShieldCheck className="h-6 w-6 text-primary" />
                 <span>Garantía legal</span>
@@ -69,10 +65,6 @@ export default async function Home() {
               <div className="flex items-center gap-2 text-white">
                 <BadgeDollarSign className="h-6 w-6 text-primary" />
                 <span>Negocia sin riesgo</span>
-              </div>
-              <div className="flex items-center gap-2 text-white">
-                <Building2 className="h-6 w-6 text-primary" />
-                <span>Entrega en showroom</span>
               </div>
             </div>
           </div>
@@ -106,6 +98,34 @@ export default async function Home() {
           </div>
         </div>
 
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <h2 className="text-center text-gray-900 font-semibold">¿Buscas un auto?</h2>
+          <form action="/search" method="GET" className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 rounded-3xl bg-gray-50 p-3">
+            <select name="make" aria-label="Marca" className="h-12 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
+              <option value="">Marca</option>
+              {VEHICLE_BRANDS.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <select name="year" aria-label="Año" className="h-12 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
+              <option value="">Año</option>
+              {Array.from({ length: 20 }).map((_, i) => {
+                const y = new Date().getFullYear() - i
+                return <option key={y} value={y}>{y}</option>
+              })}
+            </select>
+            <select name="maxPrice" aria-label="Presupuesto" className="h-12 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
+              <option value="">Presupuesto</option>
+              {[100000, 150000, 200000, 300000, 400000, 500000].map((p) => (
+                <option key={p} value={p}>Hasta ${p.toLocaleString()}</option>
+              ))}
+            </select>
+            <button type="submit" className="h-12 bg-primary hover:bg-primary-700 text-white font-semibold rounded-full transition-colors px-6">
+              Buscar
+            </button>
+          </form>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-end justify-between mb-7">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Ofertas destacadas</h2>
@@ -113,7 +133,7 @@ export default async function Home() {
               Ver todos
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             {vehicles.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}
@@ -123,6 +143,17 @@ export default async function Home() {
               </div>
             )}
           </div>
+          {vehicles.length > 0 && (
+            <div className="mt-8 flex justify-center">
+              <Link
+                href="/search"
+                className="inline-flex w-full sm:w-auto items-center justify-center h-12 px-10 rounded-full bg-primary text-white font-semibold hover:bg-primary-700 transition-colors"
+              >
+                Ver todos los autos
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -175,38 +206,30 @@ export default async function Home() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900">Cómo funciona</h2>
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
               <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-700 text-white flex items-center justify-center shadow-sm">
-                <CalendarCheck className="h-6 w-6" />
+                <Camera className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-xs font-medium text-primary">1. Selecciona tu auto</p>
-              <p className="mt-1 font-semibold text-gray-900">Contacta a tu asesor</p>
-              <p className="mt-2 text-sm text-gray-600">Elige tu auto ideal y recibe atención personalizada.</p>
+              <p className="mt-3 text-xs font-medium text-primary">1. Carga tu auto</p>
+              <p className="mt-1 font-semibold text-gray-900">Sube tus fotos y datos</p>
+              <p className="mt-2 text-sm text-gray-600">Publícalo en minutos desde tu celular; nosotros cubrimos la placa.</p>
             </div>
             <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
               <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-700 text-white flex items-center justify-center shadow-sm">
-                <Eye className="h-6 w-6" />
+                <PhoneCall className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-xs font-medium text-primary">2. Agenda tu cita</p>
-              <p className="mt-1 font-semibold text-gray-900">Ven a ver el auto</p>
-              <p className="mt-2 text-sm text-gray-600">Coordina una cita para conocerlo a detalle.</p>
+              <p className="mt-3 text-xs font-medium text-primary">2. Te contactamos</p>
+              <p className="mt-1 font-semibold text-gray-900">Un asesor te contactará</p>
+              <p className="mt-2 text-sm text-gray-600">Te acompaña con los interesados y da seguimiento a cada oferta.</p>
             </div>
             <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
               <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-700 text-white flex items-center justify-center shadow-sm">
-                <BadgeDollarSign className="h-6 w-6" />
+                <House className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-xs font-medium text-primary">3. Paga tu auto</p>
-              <p className="mt-1 font-semibold text-gray-900">Pagos protegidos</p>
-              <p className="mt-2 text-sm text-gray-600">Pago protegido sin fraudes ni riesgos.</p>
-            </div>
-            <div className="group bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-md hover:shadow-xl transition-transform hover:-translate-y-0.5">
-              <div className="mx-auto h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-700 text-white flex items-center justify-center shadow-sm">
-                <Car className="h-6 w-6" />
-              </div>
-              <p className="mt-3 text-xs font-medium text-primary">4. Llévatelo</p>
-              <p className="mt-1 font-semibold text-gray-900">Con revisión</p>
-              <p className="mt-2 text-sm text-gray-600">Llévatelo con revisión e inspección final.</p>
+              <p className="mt-3 text-xs font-medium text-primary">3. Vende tu auto</p>
+              <p className="mt-1 font-semibold text-gray-900">Desde la comodidad de tu casa</p>
+              <p className="mt-2 text-sm text-gray-600">Cerramos la venta de forma segura, sin que tengas que atender a cada interesado.</p>
             </div>
           </div>
         </div>

@@ -31,16 +31,16 @@ export default function VehicleCard({ vehicle }: { vehicle: VehicleProps }) {
             </div>
           )}
         </div>
-        <div className="p-4">
-          <h3 className="text-lg font-semibold mb-1 text-gray-900 group-hover:text-primary line-clamp-1 transition-colors">
+        <div className="p-3 md:p-4">
+          <h3 className="text-sm md:text-lg font-semibold mb-1 text-gray-900 group-hover:text-primary line-clamp-2 md:line-clamp-1 transition-colors">
             {vehicle.make} {vehicle.model} {vehicle.year}
           </h3>
-          <p className="text-xl font-bold text-gray-900 mb-2">
+          <p className="text-base md:text-xl font-bold text-gray-900 mb-1 md:mb-2">
             ${Number(vehicle.price).toLocaleString()}
           </p>
-          <div className="flex justify-between text-xs text-gray-600">
+          <div className="flex flex-col md:flex-row md:justify-between gap-0.5 text-xs text-gray-600">
             <span>{vehicle.mileage.toLocaleString()} km</span>
-            <span className="ml-3 line-clamp-1">
+            <span className="md:ml-3 line-clamp-1">
               {(() => {
                 const city = vehicle.location ? (vehicle.location as { city?: string }).city : undefined
                 const parts = [city, vehicle.state ?? undefined].filter(Boolean) as string[]
