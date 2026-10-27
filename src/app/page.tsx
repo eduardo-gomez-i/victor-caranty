@@ -33,8 +33,8 @@ export default async function Home() {
               Publica tu auto y nosotros te ayudamos a venderlo
             </h1>
             <p className="mt-2 text-lg text-white/90">Fácil, seguro y desde la comodidad de tu casa</p>
-            {/* Empieza la publicación con los datos básicos; el formulario completo los trae ya llenos */}
-            <form action="/publish" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-3 bg-white rounded-3xl md:rounded-full p-3 shadow-lg control-light">
+            {/* Empieza la publicación con marca y año; el formulario completo los trae ya llenos */}
+            <form action="/publish" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 bg-white rounded-3xl md:rounded-full p-3 shadow-lg control-light">
               <select name="make" aria-label="Marca" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
                 <option value="">Marca</option>
                 {VEHICLE_BRANDS.map((m) => (
@@ -48,7 +48,6 @@ export default async function Home() {
                   return <option key={y} value={y}>{y}</option>
                 })}
               </select>
-              <input name="mileage" type="number" min="0" inputMode="numeric" aria-label="Kilometraje" placeholder="Kilometraje" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900" />
               <button type="submit" className="h-14 bg-primary hover:bg-primary-700 text-white font-semibold rounded-full transition-colors px-6">
                 Publicar mi auto
               </button>
