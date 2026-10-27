@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Facebook, Twitter, Instagram, Linkedin, Phone, MapPin } from 'lucide-react'
+import { Phone, MapPin } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="py-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               <div>
                 <Link href="/" className="inline-flex items-center gap-2 font-bold text-xl mb-6">
                   <Image
@@ -19,55 +19,13 @@ export default function Footer() {
                     className="h-8 w-auto rounded bg-white px-2 py-1"
                   />
                 </Link>
-                <p className="text-white/80 text-sm leading-relaxed mb-6">
+                <p className="text-white/80 text-sm leading-relaxed">
                   Conectamos compradores y vendedores de autos entre particulares, brindando seguridad, revisión general del vehículo y seguimiento de la operación hasta el cierre.
                 </p>
-                <div className="flex gap-3">
-                  <a
-                    href="#"
-                    className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all"
-                  >
-                    <Facebook className="h-5 w-5" />
-                  </a>
-                  <a
-                    href="#"
-                    className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all"
-                  >
-                    <Twitter className="h-5 w-5" />
-                  </a>
-                  <a
-                    href="#"
-                    className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all"
-                  >
-                    <Instagram className="h-5 w-5" />
-                  </a>
-                  <a
-                    href="#"
-                    className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all"
-                  >
-                    <Linkedin className="h-5 w-5" />
-                  </a>
-                </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-6 text-white">Comprar</h3>
-                <ul className="space-y-4 text-sm text-white/80">
-                  <li>
-                    <Link href="/search" className="hover:text-primary transition-colors">
-                      Ver inventario
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/" className="hover:text-primary transition-colors">
-                      Agendar cita
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-6 text-white">Vender</h3>
+                <h3 className="text-lg font-semibold mb-6 text-white">Enlaces</h3>
                 <ul className="space-y-4 text-sm text-white/80">
                   <li>
                     <Link href="/publish" className="hover:text-primary transition-colors">
@@ -75,18 +33,13 @@ export default function Footer() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/" className="hover:text-primary transition-colors">
-                      Guía de precios
+                    <Link href="/search" className="hover:text-primary transition-colors">
+                      Ver inventario
                     </Link>
                   </li>
                   <li>
-                    <Link href="/" className="hover:text-primary transition-colors">
-                      Preguntas frecuentes
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/" className="hover:text-primary transition-colors">
-                      Consejos de seguridad
+                    <Link href="/nosotros" className="hover:text-primary transition-colors">
+                      Nosotros
                     </Link>
                   </li>
                 </ul>
@@ -118,9 +71,6 @@ export default function Footer() {
           <div className="border-t border-white/20 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/70">
             <p>&copy; {new Date().getFullYear()} Easy Motores. Todos los derechos reservados.</p>
             <div className="flex gap-6">
-              <Link href="/" className="hover:text-white transition-colors">
-                Términos y condiciones
-              </Link>
               <Link href="/politica-de-privacidad" className="hover:text-white transition-colors">
                 Política de privacidad
               </Link>
