@@ -10,7 +10,7 @@ export const runtime = 'nodejs'
 
 const bodySchema = z.object({ urls: z.array(z.string().min(1)).max(50) })
 
-export type PhotoAiState = 'processing' | 'edited' | 'review' | 'original'
+export type PhotoAiState = 'processing' | 'edited' | 'review' | 'removed' | 'original'
 
 // Estado de la edición con IA de las fotos que el usuario está subiendo en el formulario
 export async function POST(request: NextRequest) {
@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
       photos[url] = { state: 'original' }
     } else if (job.status === 'pending' || job.status === 'processing') {
       photos[url] = { state: 'processing' }
+    } else if (job.status === 'discarded') {
+      photos[url] = { state: 'removed' }
     } else if ((job.status === 'ready' || job.status === 'approved') && job.processedUrl) {
       photos[url] = isSafeEdit(job) ? { state: 'edited', editedUrl: job.processedUrl } : { state: 'review' }
     } else {

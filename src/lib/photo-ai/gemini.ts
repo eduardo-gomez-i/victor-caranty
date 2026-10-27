@@ -23,8 +23,10 @@ export interface Detection {
   items: { label: string; box: Box }[]
   // Placas de otros vehículos que aparecen en la foto (privacidad): se difuminan por código
   otherPlates: Box[]
-  // Problemas de contenido; detienen la publicación automática
+  // Problemas de contenido; la foto queda oculta hasta que la apruebe un admin
   flags: PhotoFlag[]
+  // La IA está segura de que la foto no corresponde (no es un auto o es inapropiada): se elimina del anuncio
+  discard: boolean
   interior: boolean
   // Zonas con suciedad suelta (solo interiores) y zonas afectadas por el sol; se usan solo si el admin lo pide
   dirt: Box[]
@@ -42,6 +44,7 @@ const DETECT_PROMPT = `This is a photo of a used car for sale. Return JSON only:
  "items": [{"label": str, "box_2d": [ymin, xmin, ymax, xmax]}],
  "other_plates": [[ymin, xmin, ymax, xmax]],
  "flags": {"contact_info": bool, "watermark": bool, "not_car": bool, "inappropriate": bool},
+ "sure": {"not_car": bool, "inappropriate": bool},
  "interior": bool,
  "dirt": [[ymin, xmin, ymax, xmax]],
  "glare": [[ymin, xmin, ymax, xmax]]}
@@ -53,6 +56,7 @@ flags (content moderation for a car marketplace):
 - watermark: logos, watermarks or text overlays from other websites, marketplaces, dealers or apps added on top of the photo.
 - not_car: the photo is not of a car (or its parts/interior), e.g. a meme, a screenshot, a person, a document.
 - inappropriate: nudity, violence, offensive gestures or symbols.
+sure: whether you are completely certain of that flag, with no doubt at all. sure.not_car is true only if no car, car part or car interior appears anywhere in the photo (e.g. people dancing in a room, a meme, a document, a landscape); if a car might be visible or the photo is unclear, false. sure.inappropriate is true only for unmistakable cases. Both false when the flag is false.
 interior: true if the photo shows the inside of the car (cabin, seats, trunk).
 dirt: only for interior photos, regions with LOOSE dirt that a vacuum or a cloth would remove: dust, soil, mud, crumbs, hair, lint, leaves, small debris on mats, carpet, seats or trim. Do NOT include stains, discoloration, wear, cracks, tears or burns. Empty if none.
 glare: regions where sun rays, lens flare or strong sun haze wash out the image. Empty if none.
@@ -147,6 +151,7 @@ export class GeminiClient {
       items?: { label?: string; box_2d?: number[] }[]
       other_plates?: number[][]
       flags?: Record<string, unknown>
+      sure?: Record<string, unknown>
       interior?: boolean
       dirt?: number[][]
       glare?: number[][]
@@ -168,11 +173,14 @@ export class GeminiClient {
         .map((b) => toBox(b, width, height))
         .filter(validBox)
     const interior = raw.interior === true
+    const flags = FLAG_KEYS.filter((k) => raw.flags?.[k] === true)
+    const sure = (k: PhotoFlag) => flags.includes(k) && raw.sure?.[k] === true
     return {
       plate,
       items,
       otherPlates: boxes(raw.other_plates),
-      flags: FLAG_KEYS.filter((k) => raw.flags?.[k] === true),
+      flags,
+      discard: sure("not_car") || sure("inappropriate"),
       interior,
       dirt: interior ? boxes(raw.dirt) : [],
       glare: boxes(raw.glare),

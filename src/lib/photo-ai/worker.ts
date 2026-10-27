@@ -136,6 +136,21 @@ export async function processPhoto(originalUrl: string, gemini = newClient(), op
 
   const detection = await gemini.detect(await downscaledJpeg(img, DETECT_SIDE), W, H)
 
+  // Foto que con certeza no corresponde (no es un auto, contenido inapropiado): no se edita y se elimina del anuncio
+  if (detection.discard) {
+    return {
+      status: "discarded",
+      processedUrl: null,
+      plateFound: false,
+      removedItems: [],
+      replacedPct: 0,
+      options: {},
+      suggestions: { dirt: false, glare: false, interior: false },
+      flags: detection.flags,
+      costUsd: roundCost(gemini.costUsd),
+    }
+  }
+
   // 1) Quitar personas y objetos (y, si el admin lo pidió, suciedad suelta o destello del sol).
   //    La IA edita la foto completa, pero solo se pegan las zonas detectadas.
   const labels = detection.items.map((i) => i.label)

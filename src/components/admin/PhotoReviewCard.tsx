@@ -47,6 +47,7 @@ const STATUS: Record<string, { label: string; className: string }> = {
   original: { label: 'Original publicada', className: 'bg-gray-100 text-gray-700' },
   unchanged: { label: 'Sin cambios necesarios', className: 'bg-gray-100 text-gray-700' },
   failed: { label: 'Error', className: 'bg-red-100 text-red-800' },
+  discarded: { label: 'Eliminada: no corresponde al auto', className: 'bg-red-100 text-red-800' },
 }
 
 export default function PhotoReviewCard({ photo }: { photo: PhotoReview }) {

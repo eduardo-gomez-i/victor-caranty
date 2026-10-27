@@ -74,6 +74,13 @@ export function PhotoAiBadge({ state }: { state?: PhotoAiState }) {
       </span>
     )
   }
+  if (state === 'removed') {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-black/60 px-2 text-center text-xs font-medium text-white">
+        No corresponde al auto: se eliminará
+      </div>
+    )
+  }
   if (state === 'review') {
     return (
       <span className="absolute left-1 top-1 rounded-full bg-yellow-100 px-2 py-0.5 text-[11px] font-medium text-yellow-800">

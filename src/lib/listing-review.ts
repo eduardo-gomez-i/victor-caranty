@@ -8,8 +8,9 @@ import { urlKey } from "@/lib/photo-ai/keys"
 // Publicación automática de anuncios:
 // 1. Se revisa el texto al guardar (teléfonos, redes, enlaces, spam); solo para vendedores.
 // 2. Si está limpio, el vehículo queda en "reviewing" (no público) mientras la IA procesa las fotos.
-// 3. Al terminar se publican las fotos editadas y el vehículo pasa a "active". Las fotos con algún
-//    problema quedan ocultas hasta que un admin las apruebe, y se le avisa por correo.
+// 3. Al terminar se publican las fotos editadas y el vehículo pasa a "active". Las fotos que la IA
+//    sabe con certeza que no corresponden (no son del auto) se eliminan; las dudosas o muy editadas
+//    quedan ocultas hasta que un admin las apruebe, y se le avisa por correo.
 // Un texto con alertas, o un anuncio sin ninguna foto publicable, queda en "pending".
 
 // Por encima de este % reconstruido por la IA, la foto la revisa una persona (podría ocultar daños)
@@ -79,6 +80,7 @@ async function syncVehiclePhotos(vehicleId: string) {
 
   let waiting = false
   let visible = 0
+  let removed = 0
   const reasons: string[] = []
   for (const [index, image] of images.entries()) {
     const job = jobs.find((j) => j.originalUrl === image.url || j.processedUrl === image.url)
@@ -89,6 +91,14 @@ async function syncVehiclePhotos(vehicleId: string) {
     }
     if (job.status === "pending" || job.status === "processing") {
       waiting = true
+      continue
+    }
+    // La IA está segura de que no corresponde al anuncio: se elimina sin pasar por el admin
+    if (job.status === "discarded") {
+      const flags = parseFlags(job.flags).map((f) => PHOTO_FLAG_LABELS[f]).join(", ")
+      reasons.push(`Foto ${index + 1} eliminada: ${flags || "no corresponde al anuncio"}`)
+      await prisma.image.delete({ where: { id: image.id } })
+      removed++
       continue
     }
     const problem = photoProblem(job)
@@ -107,11 +117,25 @@ async function syncVehiclePhotos(vehicleId: string) {
       await prisma.image.update({ where: { id: image.id }, data: { hidden: false } })
     }
   }
-  return { waiting, visible, total: images.length, reasons }
+  if (removed > 0) await renumberImages(vehicleId)
+  // Solo los motivos de fotos ocultas requieren al admin; las eliminadas quedan como registro
+  const needsReview = reasons.some((r) => r.includes("(oculta)"))
+  return { waiting, visible, total: images.length, reasons, needsReview }
+}
+
+// Tras eliminar fotos: orden consecutivo y la primera como principal
+async function renumberImages(vehicleId: string) {
+  const rest = await prisma.image.findMany({ where: { vehicleId }, orderBy: { displayOrder: "asc" } })
+  await prisma.$transaction(
+    rest.map((image, index) =>
+      prisma.image.update({ where: { id: image.id }, data: { displayOrder: index, isPrimary: index === 0 } })
+    )
+  )
 }
 
 // Revisa las fotos del vehículo y, si estaba en revisión automática y ya terminaron todas, lo publica.
-// Las fotos con problemas quedan ocultas y se avisa al admin; si no queda ninguna visible, pasa a "pending".
+// Las fotos que con certeza no corresponden se eliminan; las dudosas quedan ocultas y se avisa al admin.
+// Si no queda ninguna foto visible, pasa a "pending".
 export async function finalizeAutoReview(vehicleId: string, origin?: string) {
   const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } })
   if (!vehicle) return
@@ -124,7 +148,7 @@ export async function finalizeAutoReview(vehicleId: string, origin?: string) {
     where: { id: vehicleId, status: "reviewing" },
     data: { status, moderationFlags: photos.reasons.length > 0 ? photos.reasons : Prisma.DbNull },
   })
-  if (claimed.count === 0 || photos.reasons.length === 0) return
+  if (claimed.count === 0 || (!photos.needsReview && status === "active")) return
   await notify({ ...vehicle, status }, photos.reasons, origin, status === "active")
 }
 
