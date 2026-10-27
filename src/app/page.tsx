@@ -33,25 +33,21 @@ export default async function Home() {
               Publica tu auto y nosotros te ayudamos a venderlo
             </h1>
             <p className="mt-2 text-lg text-white/90">Fácil, seguro y desde la comodidad de tu casa</p>
-            {/* Empieza la publicación con marca y año; el formulario completo los trae ya llenos */}
-            <form action="/publish" method="GET" className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 bg-white rounded-3xl md:rounded-full p-3 shadow-lg control-light">
-              <select name="make" aria-label="Marca" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
-                <option value="">Marca</option>
-                {VEHICLE_BRANDS.map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
-              <select name="year" aria-label="Año" className="h-14 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
-                <option value="">Año</option>
-                {Array.from({ length: 25 }).map((_, i) => {
-                  const y = new Date().getFullYear() + 1 - i
-                  return <option key={y} value={y}>{y}</option>
-                })}
-              </select>
-              <button type="submit" className="h-14 bg-primary hover:bg-primary-700 text-white font-semibold rounded-full transition-colors px-6">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/publish"
+                className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-10 rounded-full bg-primary text-white text-lg font-semibold shadow-lg hover:bg-primary-700 transition-colors"
+              >
                 Publicar mi auto
-              </button>
-            </form>
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+              <Link
+                href="#buscar"
+                className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-8 rounded-full border border-white/60 text-white font-semibold hover:bg-white/10 transition-colors"
+              >
+                Quiero comprar un auto
+              </Link>
+            </div>
             <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-3">
               <div className="flex items-center gap-2 text-white">
                 <ShieldCheck className="h-6 w-6 text-primary" />
@@ -97,7 +93,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <div id="buscar" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 scroll-mt-24">
           <h2 className="text-center text-gray-900 font-semibold">¿Buscas un auto?</h2>
           <form action="/search" method="GET" className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 rounded-3xl bg-gray-50 p-3">
             <select name="make" aria-label="Marca" className="h-12 rounded-full border border-gray-200 px-4 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900">
