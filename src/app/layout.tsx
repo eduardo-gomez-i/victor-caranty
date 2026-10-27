@@ -39,14 +39,14 @@ export const metadata: Metadata = {
     title: "EasyMotores | Compra y vende autos seminuevos en Querétaro, México",
     description:
       "Compra y vende autos seminuevos en Querétaro, México. Trato directo, pagos protegidos y entrega con revisión.",
-    images: ["/easymotores_logo.png"],
+    images: ["/brand/logo-easymotores.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "EasyMotores",
     description:
       "Compra y vende autos seminuevos en Querétaro, México. Trato directo, pagos protegidos y entrega con revisión.",
-    images: ["/easymotores_logo.png"],
+    images: ["/brand/logo-easymotores.png"],
   },
   robots: {
     index: true,

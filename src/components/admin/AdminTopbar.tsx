@@ -14,7 +14,7 @@ export default function AdminTopbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/" className="inline-flex items-center gap-2">
-            <Image src="/easymotores_logo.png" alt="EasyMotores" width={160} height={28} className="h-6 w-auto" />
+            <Image src="/brand/logo-easymotores.png" alt="EasyMotores" width={160} height={28} className="h-6 w-auto" />
           </Link>
           <span className="text-gray-300">/</span>
           <span className="text-sm text-gray-800">Admin</span>

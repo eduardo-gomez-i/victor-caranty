@@ -42,7 +42,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
               href="/"
               className={`inline-flex items-center gap-2 ${isTransparent ? 'bg-white/90 rounded-lg px-2 py-1' : ''}`}
             >
-              <Image src="/easymotores_logo.png" alt="EasyMotores" width={180} height={32} className="h-8 w-auto" />
+              <Image src="/brand/logo-easymotores.png" alt="EasyMotores" width={180} height={32} className="h-8 w-auto" />
             </Link>
             <nav className={`hidden md:flex items-center gap-6 ${isTransparent ? 'text-white/90' : 'text-black/90'} text-sm`}>
               <Link href={publishHref} className={`transition-colors ${isTransparent ? 'hover:text-white' : 'hover:text-primary'}`}>Vende tu auto</Link>

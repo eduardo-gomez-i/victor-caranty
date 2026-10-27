@@ -12,7 +12,7 @@ export default function Footer() {
               <div>
                 <Link href="/" className="inline-flex items-center gap-2 font-bold text-xl mb-6">
                   <Image
-                    src="/easymotores_logo.png"
+                    src="/brand/logo-easymotores.png"
                     alt="EasyMotores"
                     width={180}
                     height={32}
