@@ -237,6 +237,10 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
                 {INVOICE_TYPES.map(t => (
                   <option key={t} value={t}>{t}</option>
                 ))}
+                {/* Anuncios con un tipo de la lista anterior: se conserva hasta que lo cambien */}
+                {vehicle.invoiceType && !(INVOICE_TYPES as readonly string[]).includes(vehicle.invoiceType) && (
+                  <option value={vehicle.invoiceType}>{vehicle.invoiceType}</option>
+                )}
               </Select>
             </div>
             <div>

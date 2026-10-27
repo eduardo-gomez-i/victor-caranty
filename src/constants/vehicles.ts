@@ -38,11 +38,16 @@ export const VEHICLE_BRANDS = [
 ] as const;
 
 export const INVOICE_TYPES = [
-  'Factura original',
-  'Refacturado',
+  'Factura original de agencia',
+  'Factura de seminuevos de agencia',
+  'Refactura de lote de autos',
+  'Refactura de empresa',
+  'Factura de leasing / arrendamiento',
   'Factura de aseguradora',
-  'Factura de financiera / arrendadora',
-  'Factura de empresa',
+  'Factura de persona física',
+  'Importado de EE. UU. por aduana',
+  'Regularizado por decreto (EE. UU.)',
+  'Importado de EE. UU. sin regularizar',
 ] as const;
 
 export const TRANSMISSIONS = ['Manual', 'Automática'] as const;
