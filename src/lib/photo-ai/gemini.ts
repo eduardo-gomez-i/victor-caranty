@@ -39,6 +39,8 @@ export interface Detection {
 export interface EditOptions {
   clean?: boolean
   deglare?: boolean
+  // Año, marca y modelo del auto: ayuda a reconstruir fielmente lo que tapaba un objeto
+  vehicle?: string
 }
 
 const DETECT_PROMPT = `This is a photo of a used car for sale. Return JSON only:
@@ -51,7 +53,7 @@ const DETECT_PROMPT = `This is a photo of a used car for sale. Return JSON only:
  "dirt": [[ymin, xmin, ymax, xmax]],
  "glare": [[ymin, xmin, ymax, xmax]]}
 plate: the car's license plate, 4 outer corners including its frame, in order top-left, top-right, bottom-right, bottom-left. easymotores: true if that plate is already an EasyMotores plate (white plate with the blue E logo and the text EasyMotores) instead of a real license plate.
-items: every thing that must be removed before publishing: loose objects that are NOT part of the car (trash, bottles, cans, paper, tissues, rags, clothes, bags, backpacks, boxes, tape, toys, brochures, cables, tools, shoes), loose papers, notes, tickets or signs placed on or behind the windshield or on the dashboard, and any people. Do NOT list car parts or accessories that belong to the car (seats, seat belts, buckles, floor mats, cargo cover, headrests, trim), other parked cars, nor stains, wear or damage. Use short, specific labels in Spanish (e.g. "botella de agua", "persona", "mochila", "papel en el parabrisas").
+items: every thing that must be removed before publishing: loose objects that are NOT part of the car (trash, bottles, cans, paper, tissues, rags, clothes, bags, backpacks, boxes, tape, toys, brochures, cables, tools, shoes), loose papers, notes, tickets or signs placed on or behind the windshield or on the dashboard, and any people. Do NOT list car parts or accessories that belong to the car (seats, seat belts, buckles, floor mats, cargo cover, headrests, trim), other parked cars, nor stains, wear or damage. Use short, specific labels in Spanish (e.g. "botella de agua", "persona", "mochila", "papel en el parabrisas"). Each box_2d must cover the WHOLE object including everything attached to it (straws, lids, handles, cables, tags) and its shadow, with a small margin.
 other_plates: license plates of OTHER vehicles in the photo (not the car being sold), even small or partly visible. Empty if none.
 flags (content moderation for a car marketplace):
 - contact_info: phone numbers, emails, websites or social media handles written anywhere in the photo (signs like "se vende" with a number, stickers, text overlays). A license plate is NOT contact info. The EasyMotores / EasyMotores.com plate, sticker or logo is our own brand: it is NOT contact_info nor watermark.
@@ -80,9 +82,17 @@ function editPrompt(items: string[], options: EditOptions) {
   if (items.length > 0) {
     parts.push(
       `Remove ONLY these items from the photo: ${items.join(", ")}. ` +
-        "Fill each area with the surface that is behind it, continuing its exact texture, color and lighting " +
-        "(carpet, leather, plastic, ground). "
+        "Remove each item completely, including anything attached to it (straws, lids, cables). " +
+        "Fill each area with what is really behind it, continuing its exact texture, color and lighting " +
+        "(carpet, leather, plastic, ground). " +
+        "Where an item covered part of the car (cup holders, console, buttons, vents, seats, mats, door panels), rebuild " +
+        "that part exactly as it is on this car: copy its shape, size, material and details from the identical or " +
+        "symmetric parts still visible in the photo (for example, the cup holder next to it, the other seat, the other " +
+        "side of the console). Never invent new shapes, buttons, inserts or textures. "
     )
+    if (options.vehicle) {
+      parts.push(`The car is a ${options.vehicle}; the rebuilt parts must match that model's real interior and exterior. `)
+    }
   }
   if (options.clean) parts.push(CLEAN_PROMPT)
   if (options.deglare) parts.push(DEGLARE_PROMPT)

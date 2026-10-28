@@ -26,7 +26,8 @@ export { urlKey }
 
 // Crea trabajos para las fotos subidas que aún no tienen uno y arranca el procesamiento.
 // Solo fotos locales (/uploads/...); las ya procesadas (/uploads/ai/...) se ignoran.
-export async function enqueuePhotos(urls: string[]) {
+// vehicle: año, marca y modelo si ya se conocen (al subir desde el formulario), para reconstruir con fidelidad
+export async function enqueuePhotos(urls: string[], vehicle?: string) {
   if (!photoAiEnabled()) return
   const candidates = urls.filter((u) => u.startsWith("/uploads/") && !u.startsWith("/uploads/ai/"))
   if (candidates.length === 0) return
@@ -36,7 +37,12 @@ export async function enqueuePhotos(urls: string[]) {
   const fresh = candidates.filter((u) => !known.has(urlKey(u)))
   if (fresh.length > 0) {
     await prisma.photoJob.createMany({
-      data: fresh.map((originalUrl) => ({ urlKey: urlKey(originalUrl), originalUrl, costUsd: 0 })),
+      data: fresh.map((originalUrl) => ({
+        urlKey: urlKey(originalUrl),
+        originalUrl,
+        costUsd: 0,
+        ...(vehicle && { options: { vehicle } }),
+      })),
       skipDuplicates: true,
     })
   }
@@ -109,7 +115,8 @@ function newClient() {
 
 export function parseOptions(value: unknown): EditOptions {
   const o = (value && typeof value === "object" ? value : {}) as Record<string, unknown>
-  return { clean: o.clean === true, deglare: o.deglare === true }
+  const vehicle = typeof o.vehicle === "string" ? o.vehicle.replace(/[^\p{L}\p{N} .\-/]/gu, "").trim().slice(0, 80) : ""
+  return { clean: o.clean === true, deglare: o.deglare === true, ...(vehicle && { vehicle }) }
 }
 
 // El admin pidió el retoque: se aplica aunque la detección no lo haya sugerido (no siempre es constante).
@@ -121,6 +128,23 @@ function cleanZones(d: Detection, W: number, H: number): Box[] {
 
 function glareZones(d: Detection, W: number, H: number): Box[] {
   return d.glare.length > 0 ? d.glare : [[0, 0, W, H]]
+}
+
+const ITEM_MARGIN = 0.12
+
+function padBox([x0, y0, x1, y1]: Box, pct: number, W: number, H: number): Box {
+  const mx = Math.max(6, (x1 - x0) * pct), my = Math.max(6, (y1 - y0) * pct)
+  return [Math.max(0, x0 - mx), Math.max(0, y0 - my), Math.min(W, x1 + mx), Math.min(H, y1 + my)]
+}
+
+// Año, marca, modelo y versión del vehículo que usa la foto (si ya está publicado)
+async function vehicleNameForPhoto(url: string) {
+  const image = await prisma.image.findFirst({
+    where: { url },
+    select: { vehicle: { select: { year: true, make: true, model: true, version: true } } },
+  })
+  const v = image?.vehicle
+  return v ? [v.year, v.make, v.model, v.version].filter(Boolean).join(" ") : undefined
 }
 
 function roundCost(usd: number) {
@@ -155,11 +179,13 @@ export async function processPhoto(originalUrl: string, gemini = newClient(), op
   //    La IA edita la foto completa, pero solo se pegan las zonas detectadas.
   const labels = detection.items.map((i) => i.label)
   const boxes = [
-    ...detection.items.map((i) => i.box),
+    // Margen alrededor de cada objeto: que no queden restos (la punta de un popote, una sombra)
+    ...detection.items.map((i) => padBox(i.box, ITEM_MARGIN, W, H)),
     ...(options.clean ? cleanZones(detection, W, H) : []),
     ...(options.deglare ? glareZones(detection, W, H) : []),
   ]
-  const editOptions = { clean: !!options.clean && detection.interior, deglare: !!options.deglare }
+  const vehicle = options.vehicle || (await vehicleNameForPhoto(originalUrl))
+  const editOptions = { clean: !!options.clean && detection.interior, deglare: !!options.deglare, ...(vehicle && { vehicle }) }
   let replacedPct = 0
   if (boxes.length > 0) {
     const input = await downscaledJpeg(img, EDIT_SIDE)

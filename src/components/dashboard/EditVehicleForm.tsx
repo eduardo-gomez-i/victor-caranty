@@ -117,6 +117,8 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
         const compressed = await compressImage(file)
         const data = new FormData()
         data.append('file', compressed)
+        // Año, marca y modelo para que la IA reconstruya con fidelidad lo que tape un objeto
+        data.append('vehicle', [formData.year, formData.make === '__other__' ? formData.customMake : formData.make, formData.model, formData.version].map((v) => String(v ?? '').trim()).filter(Boolean).join(' '))
         const res = await fetch('/api/upload', { method: 'POST', body: data })
         if (!res.ok) throw new Error('Error al subir imagen')
         const json = await res.json()

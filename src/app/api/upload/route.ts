@@ -53,7 +53,8 @@ export async function POST(request: NextRequest) {
     // La edición con IA arranca desde que se sube, para que al publicar ya esté lista
     if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
       try {
-        await enqueuePhotos([url])
+        const vehicle = String(form.get('vehicle') ?? '').slice(0, 120)
+        await enqueuePhotos([url], vehicle || undefined)
       } catch (e) {
         console.error('No se pudo encolar la foto para IA:', e)
       }
