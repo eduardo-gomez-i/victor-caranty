@@ -20,6 +20,8 @@ export type Box = [number, number, number, number] // x0, y0, x1, y1 en px
 export interface Detection {
   // Esquinas de la placa en px de la imagen enviada: sup-izq, sup-der, inf-der, inf-izq
   plate: Point[] | null
+  // La foto ya trae la placa de EasyMotores (no se reemplaza)
+  plateIsOurs: boolean
   items: { label: string; box: Box }[]
   // Placas de otros vehículos que aparecen en la foto (privacidad): se difuminan por código
   otherPlates: Box[]
@@ -40,7 +42,7 @@ export interface EditOptions {
 }
 
 const DETECT_PROMPT = `This is a photo of a used car for sale. Return JSON only:
-{"plate": {"found": bool, "corners": [[y,x],[y,x],[y,x],[y,x]]},
+{"plate": {"found": bool, "easymotores": bool, "corners": [[y,x],[y,x],[y,x],[y,x]]},
  "items": [{"label": str, "box_2d": [ymin, xmin, ymax, xmax]}],
  "other_plates": [[ymin, xmin, ymax, xmax]],
  "flags": {"contact_info": bool, "watermark": bool, "not_car": bool, "inappropriate": bool},
@@ -48,7 +50,7 @@ const DETECT_PROMPT = `This is a photo of a used car for sale. Return JSON only:
  "interior": bool,
  "dirt": [[ymin, xmin, ymax, xmax]],
  "glare": [[ymin, xmin, ymax, xmax]]}
-plate: the car's license plate, 4 outer corners including its frame, in order top-left, top-right, bottom-right, bottom-left.
+plate: the car's license plate, 4 outer corners including its frame, in order top-left, top-right, bottom-right, bottom-left. easymotores: true if that plate is already an EasyMotores plate (white plate with the blue E logo and the text EasyMotores) instead of a real license plate.
 items: every thing that must be removed before publishing: loose objects that are NOT part of the car (trash, bottles, cans, paper, tissues, rags, clothes, bags, backpacks, boxes, tape, toys, brochures, cables, tools, shoes), loose papers, notes, tickets or signs placed on or behind the windshield or on the dashboard, and any people. Do NOT list car parts or accessories that belong to the car (seats, seat belts, buckles, floor mats, cargo cover, headrests, trim), other parked cars, nor stains, wear or damage. Use short, specific labels in Spanish (e.g. "botella de agua", "persona", "mochila", "papel en el parabrisas").
 other_plates: license plates of OTHER vehicles in the photo (not the car being sold), even small or partly visible. Empty if none.
 flags (content moderation for a car marketplace):
@@ -147,7 +149,7 @@ export class GeminiClient {
   // jpeg: imagen reducida; width/height: tamaño de la foto real al que se escalan las coordenadas
   async detect(jpeg: Buffer, width: number, height: number): Promise<Detection> {
     const raw = await this.askJson<{
-      plate?: { found?: boolean; corners?: number[][] }
+      plate?: { found?: boolean; easymotores?: boolean; corners?: number[][] }
       items?: { label?: string; box_2d?: number[] }[]
       other_plates?: number[][]
       flags?: Record<string, unknown>
@@ -157,7 +159,9 @@ export class GeminiClient {
       glare?: number[][]
     }>(jpeg, DETECT_PROMPT)
 
-    const plate = raw.plate?.found ? toPoints(raw.plate.corners, 0, 0, width, height) : null
+    // Una placa EasyMotores que ya trae la foto se conserva: se ve más natural que reemplazarla
+    const plateIsOurs = raw.plate?.found === true && raw.plate.easymotores === true
+    const plate = raw.plate?.found && !plateIsOurs ? toPoints(raw.plate.corners, 0, 0, width, height) : null
     const items = (raw.items ?? [])
       .filter((i) => Array.isArray(i.box_2d) && i.box_2d.length === 4)
       .map((i) => {
@@ -177,6 +181,7 @@ export class GeminiClient {
     const sure = (k: PhotoFlag) => flags.includes(k) && raw.sure?.[k] === true
     return {
       plate,
+      plateIsOurs,
       items,
       otherPlates: boxes(raw.other_plates),
       flags,

@@ -202,7 +202,8 @@ export async function processPhoto(originalUrl: string, gemini = newClient(), op
   }
 
   const base = {
-    plateFound,
+    // Cubierta por nosotros o ya traía la placa EasyMotores
+    plateFound: plateFound || detection.plateIsOurs,
     removedItems: [...labels, ...detection.otherPlates.map(() => "placa de otro auto (difuminada)")],
     replacedPct: Math.round(replacedPct * 10) / 10,
     options: editOptions,

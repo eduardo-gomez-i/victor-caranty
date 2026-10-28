@@ -2,69 +2,66 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Button from '@/components/ui/Button'
-import { Check, X } from 'lucide-react'
+import { Check, Loader2, X } from 'lucide-react'
 
-export default function AdminVehicleActions({ vehicleId, currentStatus }: { vehicleId: string, currentStatus: string }) {
-  const [isLoading, setIsLoading] = useState(false)
+export default function AdminVehicleActions({
+  vehicleId,
+  currentStatus,
+  hiddenPhotos = 0,
+}: {
+  vehicleId: string
+  currentStatus: string
+  hiddenPhotos?: number
+}) {
+  const [loading, setLoading] = useState<'active' | 'rejected' | null>(null)
   const router = useRouter()
 
-  const updateStatus = async (newStatus: string) => {
-    const action = newStatus === 'active' ? 'aprobar' : 'rechazar'
-    if (!window.confirm(`¿Estás seguro de que deseas ${action} este vehículo?`)) {
-      return
-    }
+  const updateStatus = async (newStatus: 'active' | 'rejected') => {
+    const message =
+      newStatus === 'active'
+        ? `¿Aprobar y publicar este vehículo?${hiddenPhotos > 0 ? `\n\nTambién se publicarán ${hiddenPhotos} foto(s) que estaban ocultas.` : ''}`
+        : '¿Rechazar este vehículo? No será visible para el público.'
+    if (!window.confirm(message)) return
 
-    setIsLoading(true)
+    setLoading(newStatus)
     try {
       const res = await fetch(`/api/admin/vehicles/${vehicleId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       })
-
-      if (!res.ok) {
-        throw new Error('Error al actualizar el estado')
-      }
-      
+      if (!res.ok) throw new Error('Error al actualizar el estado')
       router.refresh()
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Error')
     } finally {
-      setIsLoading(false)
+      setLoading(null)
     }
   }
 
-  // También se puede aprobar o rechazar antes de que termine la revisión automática
-  if (currentStatus !== 'pending' && currentStatus !== 'reviewing') {
-    return (
-      <span className="text-sm text-gray-500">
-        {currentStatus === 'active' ? 'Aprobado' : currentStatus === 'rejected' ? 'Rechazado' : currentStatus}
-      </span>
-    )
-  }
+  // Solo hay decisión pendiente en "pending" y "reviewing" (se puede adelantar a la revisión automática)
+  if (currentStatus !== 'pending' && currentStatus !== 'reviewing') return null
 
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        size="sm"
+    <>
+      <button
+        type="button"
         onClick={() => updateStatus('active')}
-        isLoading={isLoading}
-        className="bg-primary hover:bg-primary-700 text-white p-2 h-8"
-        title="Aprobar"
+        disabled={loading !== null}
+        className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-60"
       >
-        {!isLoading && <Check className="h-4 w-4" />}
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
+        {loading === 'active' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+        Aprobar
+      </button>
+      <button
+        type="button"
         onClick={() => updateStatus('rejected')}
-        isLoading={isLoading}
-        className="text-red-600 hover:bg-red-50 hover:text-red-700 p-2 h-8"
-        title="Rechazar"
+        disabled={loading !== null}
+        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
       >
-        {!isLoading && <X className="h-4 w-4" />}
-      </Button>
-    </div>
+        {loading === 'rejected' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+        Rechazar
+      </button>
+    </>
   )
 }

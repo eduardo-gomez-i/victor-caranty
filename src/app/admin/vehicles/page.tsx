@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table'
 import AdminVehicleActions from '@/components/admin/AdminVehicleActions'
 import Link from 'next/link'
+import { EyeOff, Images, Pencil } from 'lucide-react'
+import VehicleStatusBadge from '@/components/admin/VehicleStatusBadge'
 
 export const metadata = {
   title: 'Vehículos Pendientes | Admin',
@@ -38,7 +40,7 @@ export default async function AdminVehiclesPage() {
 
       <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="[&_td]:px-3 [&_th]:px-3">
             <TableHeader>
               <TableRow>
                 <TableHead>Vehículo</TableHead>
@@ -53,7 +55,7 @@ export default async function AdminVehiclesPage() {
               {sortedVehicles.map((vehicle) => (
                 <TableRow key={vehicle.id}>
                   <TableCell>
-                    <Link href={`/vehicles/${vehicle.id}`} className="font-medium text-blue-600 hover:underline">
+                    <Link href={`/vehicles/${vehicle.id}`} className="block min-w-36 font-semibold text-gray-900 hover:text-primary hover:underline">
                       {vehicle.make} {vehicle.model} {vehicle.year}
                     </Link>
                   </TableCell>
@@ -61,23 +63,18 @@ export default async function AdminVehiclesPage() {
                     <div className="text-sm text-gray-900">{vehicle.user.name || 'Sin nombre'}</div>
                     <div className="text-xs text-gray-500">{vehicle.user.email}</div>
                   </TableCell>
-                  <TableCell>${Number(vehicle.price).toLocaleString()}</TableCell>
+                  <TableCell className="whitespace-nowrap font-semibold text-gray-900 tabular-nums">
+                    ${Number(vehicle.price).toLocaleString('es-MX')}
+                  </TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      vehicle.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      vehicle.status === 'reviewing' ? 'bg-purple-100 text-purple-800' :
-                      vehicle.status === 'active' ? 'bg-blue-100 text-blue-800' :
-                      vehicle.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {vehicle.status === 'pending' ? 'Pendiente' : 
-                       vehicle.status === 'reviewing' ? 'Revisión automática' : 
-                       vehicle.status === 'active' ? 'Activo' : 
-                       vehicle.status === 'rejected' ? 'Rechazado' : vehicle.status}
-                    </span>
+                    <VehicleStatusBadge status={vehicle.status} />
                     {vehicle._count.images > 0 && (
-                      <Link href={`/admin/vehicles/${vehicle.id}/photos`} className="mt-1 block text-xs text-red-700 hover:underline">
-                        {vehicle._count.images} foto(s) oculta(s) por revisar
+                      <Link
+                        href={`/admin/vehicles/${vehicle.id}/photos`}
+                        className="mt-2 inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+                      >
+                        <EyeOff className="h-3.5 w-3.5" />
+                        {vehicle._count.images === 1 ? '1 foto oculta' : `${vehicle._count.images} fotos ocultas`} · revisar
                       </Link>
                     )}
                     {vehicle.status === 'pending' && Array.isArray(vehicle.moderationFlags) && vehicle.moderationFlags.length > 0 && (
@@ -88,15 +85,28 @@ export default async function AdminVehiclesPage() {
                       </ul>
                     )}
                   </TableCell>
-                  <TableCell className="text-gray-700">
+                  <TableCell className="whitespace-nowrap text-gray-700">
                     {new Date(vehicle.createdAt).toLocaleDateString('es-MX')}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <Link href={`/admin/vehicles/${vehicle.id}/photos`} className="text-sm text-blue-600 hover:underline">
-                        Fotos
+                    <div className="flex items-center justify-end gap-2">
+                      <AdminVehicleActions vehicleId={vehicle.id} currentStatus={vehicle.status} hiddenPhotos={vehicle._count.images} />
+                      <Link
+                        href={`/admin/vehicles/${vehicle.id}/photos`}
+                        title="Fotos"
+                      aria-label="Fotos"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50"
+                      >
+                        <Images className="h-4 w-4 text-primary" />
                       </Link>
-                      <AdminVehicleActions vehicleId={vehicle.id} currentStatus={vehicle.status} />
+                      <Link
+                        href={`/dashboard/vehicles/${vehicle.id}/edit`}
+                        title="Editar"
+                      aria-label="Editar"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50"
+                      >
+                        <Pencil className="h-4 w-4 text-primary" />
+                      </Link>
                     </div>
                   </TableCell>
                 </TableRow>

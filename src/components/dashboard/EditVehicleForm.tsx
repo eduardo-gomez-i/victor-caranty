@@ -12,6 +12,7 @@ import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
 import { PhotoAiBadge, PhotoAiProgress, usePhotoAi } from '@/components/vehicles/usePhotoAi'
+import PhotoOrderBar, { moveItem } from '@/components/vehicles/PhotoOrderBar'
 import { INVOICE_TYPES, MIN_PHOTOS, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
@@ -341,15 +342,12 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full shadow transition-opacity md:opacity-0 md:group-hover:opacity-100"
+                    aria-label="Quitar foto"
                   >
                     <X className="h-4 w-4" />
                   </button>
-                  {index === 0 && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gray-500 text-white text-xs py-1 text-center">
-                      Foto principal
-                    </div>
-                  )}
+                  <PhotoOrderBar index={index} total={images.length} onMove={(from, to) => setImages((prev) => moveItem(prev, from, to))} />
                 </div>
               ))}
             </div>

@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma"
 import Link from "next/link"
+import VehicleStatusBadge from "@/components/admin/VehicleStatusBadge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table"
 
@@ -101,20 +102,9 @@ export default async function AdminDashboardPage() {
                           {v.make} {v.model} {v.year}
                         </TableCell>
                         <TableCell className="text-gray-700">{v.user.name}</TableCell>
-                        <TableCell className="text-gray-700">${Number(v.price).toLocaleString()}</TableCell>
+                        <TableCell className="whitespace-nowrap font-semibold text-gray-900 tabular-nums">${Number(v.price).toLocaleString('es-MX')}</TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            v.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            v.status === 'reviewing' ? 'bg-purple-100 text-purple-800' :
-                            v.status === 'active' ? 'bg-blue-100 text-blue-800' :
-                            v.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {v.status === 'pending' ? 'Pendiente' : 
-                             v.status === 'reviewing' ? 'Revisión automática' : 
-                             v.status === 'active' ? 'Activo' : 
-                             v.status === 'rejected' ? 'Rechazado' : v.status}
-                          </span>
+                          <VehicleStatusBadge status={v.status} />
                         </TableCell>
                       </TableRow>
                     ))
