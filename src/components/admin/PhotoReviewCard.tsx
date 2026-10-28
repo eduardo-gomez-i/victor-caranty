@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button'
 import { PHOTO_FLAG_LABELS, PhotoFlag } from '@/lib/photo-ai/flags'
 
 // Por encima de este % la IA reconstruyó una zona grande (p. ej. un asiento bajo un objeto): revisar con lupa.
-const LARGE_AREA_PCT = 5
+const LARGE_AREA_PCT = 10
 
 export interface PhotoReview {
   index: number

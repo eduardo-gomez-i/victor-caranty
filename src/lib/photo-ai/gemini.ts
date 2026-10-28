@@ -41,6 +41,8 @@ export interface EditOptions {
   deglare?: boolean
   // Año, marca y modelo del auto: ayuda a reconstruir fielmente lo que tapaba un objeto
   vehicle?: string
+  // Descripción previa de las piezas del auto que tapan los objetos (no se guarda)
+  hidden?: string
 }
 
 const DETECT_PROMPT = `This is a photo of a used car for sale. Return JSON only:
@@ -93,6 +95,7 @@ function editPrompt(items: string[], options: EditOptions) {
     if (options.vehicle) {
       parts.push(`The car is a ${options.vehicle}; the rebuilt parts must match that model's real interior and exterior. `)
     }
+    if (options.hidden) parts.push(`What is behind the items, to rebuild exactly: ${options.hidden} `)
   }
   if (options.clean) parts.push(CLEAN_PROMPT)
   if (options.deglare) parts.push(DEGLARE_PROMPT)
@@ -200,6 +203,19 @@ export class GeminiClient {
       dirt: interior ? boxes(raw.dirt) : [],
       glare: boxes(raw.glare),
     }
+  }
+
+  // Antes de editar: qué parte del auto tapa cada objeto y cómo es en este modelo, según las piezas iguales o
+  // simétricas que sí se ven. Se pasa al editor para que reconstruya con fidelidad en lugar de inventar.
+  async describeHidden(jpeg: Buffer, items: string[], vehicle?: string): Promise<string> {
+    const prompt =
+      `Photo of a used ${vehicle || "car"} for sale. These items will be digitally removed: ${items.join(", ")}. ` +
+      "For each item, describe in one or two short sentences exactly what is behind it on this car (for example the " +
+      "cup holder, console, seat fabric, mat or trim), with its shape, size, material, color and details. Base it on " +
+      "identical or symmetric parts visible in this photo and on how this exact model is built. If nothing of the car " +
+      'is behind an item (only background), say so. Return JSON only: {"hidden": str}'
+    const raw = await this.askJson<{ hidden?: unknown }>(jpeg, prompt)
+    return typeof raw.hidden === "string" ? raw.hidden.slice(0, 1200) : ""
   }
 
   // Segunda pasada sobre un recorte alrededor de la placa para afinar las esquinas.

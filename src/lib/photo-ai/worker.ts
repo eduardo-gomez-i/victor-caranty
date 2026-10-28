@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma"
 import { finalizeVehiclesUsingPhoto } from "@/lib/listing-review"
 import { urlKey } from "./keys"
 import { Box, Detection, EditOptions, GeminiClient } from "./gemini"
-import { alignEdit, applyPlate, blendEdits, blurBoxes, downscaledJpeg, encodeJpeg, loadRaw } from "./compose"
+import { Region, alignEdit, applyPlate, blendEdits, blurBoxes, cropRaw, downscaledJpeg, encodeJpeg, loadRaw, pasteRaw } from "./compose"
 
 const PLATE_GRAPHIC = path.join(process.cwd(), "public", "brand", "placa-easymotores.png")
 const OUTPUT_DIR = path.join(process.cwd(), "public", "uploads", "ai")
@@ -130,11 +130,42 @@ function glareZones(d: Detection, W: number, H: number): Box[] {
   return d.glare.length > 0 ? d.glare : [[0, 0, W, H]]
 }
 
-const ITEM_MARGIN = 0.12
+const MAX_ZONES = 2 // ediciones enfocadas por foto; con más grupos se edita la foto completa
+const ZONE_CONTEXT = 2.6 // la zona mide ~2.6 veces el objeto, para que la IA vea las piezas de alrededor
+const ZONE_MIN = 0.4 // y al menos 40% del lado de la foto
+const ZONE_MAX_AREA = 0.6 // si la zona ocupa más que esto, conviene editar la foto completa
 
-function padBox([x0, y0, x1, y1]: Box, pct: number, W: number, H: number): Box {
-  const mx = Math.max(6, (x1 - x0) * pct), my = Math.max(6, (y1 - y0) * pct)
-  return [Math.max(0, x0 - mx), Math.max(0, y0 - my), Math.min(W, x1 + mx), Math.min(H, y1 + my)]
+function overlaps([x0, y0, x1, y1]: Box, r: Region) {
+  return x1 > r.left && x0 < r.left + r.width && y1 > r.top && y0 < r.top + r.height
+}
+
+// Agrupa los objetos cercanos y arma un recorte amplio (con la proporción de la foto) alrededor de cada grupo.
+// null = conviene editar la foto completa.
+function focusRegions(boxes: Box[], W: number, H: number): Region[] | null {
+  const zoneFor = ([x0, y0, x1, y1]: Box): Region => {
+    let w = Math.max((x1 - x0) * ZONE_CONTEXT, W * ZONE_MIN)
+    let h = Math.max((y1 - y0) * ZONE_CONTEXT, H * ZONE_MIN)
+    // Misma proporción que la foto (el editor responde en proporciones fijas)
+    if (w / h > W / H) h = (w * H) / W
+    else w = (h * W) / H
+    w = Math.min(W, Math.round(w))
+    h = Math.min(H, Math.round(h))
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2
+    const left = Math.round(Math.min(Math.max(0, cx - w / 2), W - w))
+    const top = Math.round(Math.min(Math.max(0, cy - h / 2), H - h))
+    return { left, top, width: w, height: h }
+  }
+  // Une los objetos cuyas zonas se tocan
+  const groups: Box[] = []
+  for (const b of boxes) {
+    const i = groups.findIndex((g) => overlaps(g, zoneFor(b)) || overlaps(b, zoneFor(g)))
+    if (i === -1) groups.push([...b] as Box)
+    else groups[i] = [Math.min(groups[i][0], b[0]), Math.min(groups[i][1], b[1]), Math.max(groups[i][2], b[2]), Math.max(groups[i][3], b[3])]
+  }
+  if (groups.length > MAX_ZONES) return null
+  const zones = groups.map(zoneFor)
+  if (zones.some((z) => z.width * z.height > W * H * ZONE_MAX_AREA)) return null
+  return zones
 }
 
 // Año, marca, modelo y versión del vehículo que usa la foto (si ya está publicado)
@@ -178,32 +209,47 @@ export async function processPhoto(originalUrl: string, gemini = newClient(), op
   // 1) Quitar personas y objetos (y, si el admin lo pidió, suciedad suelta o destello del sol).
   //    La IA edita la foto completa, pero solo se pegan las zonas detectadas.
   const labels = detection.items.map((i) => i.label)
-  const boxes = [
-    // Margen alrededor de cada objeto: que no queden restos (la punta de un popote, una sombra)
-    ...detection.items.map((i) => padBox(i.box, ITEM_MARGIN, W, H)),
+  const itemBoxes = detection.items.map((i) => i.box)
+  const retouchBoxes = [
     ...(options.clean ? cleanZones(detection, W, H) : []),
     ...(options.deglare ? glareZones(detection, W, H) : []),
   ]
+  const boxes = [...itemBoxes, ...retouchBoxes]
   const vehicle = options.vehicle || (await vehicleNameForPhoto(originalUrl))
   const editOptions = { clean: !!options.clean && detection.interior, deglare: !!options.deglare, ...(vehicle && { vehicle }) }
   let replacedPct = 0
   if (boxes.length > 0) {
-    const input = await downscaledJpeg(img, EDIT_SIDE)
-    // El editor a veces cambia el encuadre o redibuja la escena: se alinea y, si no empata, se reintenta una vez
-    let edited: Buffer | null = null
-    let align: Awaited<ReturnType<typeof alignEdit>> | null = null
-    for (let attempt = 0; attempt < 2; attempt++) {
-      edited = await gemini.edit(input, labels, editOptions, W, H)
-      if (process.env.PHOTO_AI_DEBUG_DIR) {
-        await fs.writeFile(path.join(process.env.PHOTO_AI_DEBUG_DIR, `${path.parse(originalUrl).name}-raw${attempt}.png`), edited)
+    // Solo objetos: se edita un recorte amplio alrededor de cada grupo (la IA ve la zona con mucho más detalle y
+    // copia mejor las piezas vecinas). Con retoques de toda la foto, o muchos grupos, se edita la foto completa.
+    const regions = retouchBoxes.length === 0 ? focusRegions(itemBoxes, W, H) : null
+    const zones = regions ?? [{ left: 0, top: 0, width: W, height: H }]
+    for (const zone of zones) {
+      const full = zone.width === W && zone.height === H
+      const target = full ? img : cropRaw(img, zone)
+      const local = boxes
+        .filter((b) => full || overlaps(b, zone))
+        .map(([x0, y0, x1, y1]) => [x0 - zone.left, y0 - zone.top, x1 - zone.left, y1 - zone.top] as Box)
+      const zoneLabels = full ? labels : detection.items.filter((i) => overlaps(i.box, zone)).map((i) => i.label)
+      const input = await downscaledJpeg(target, EDIT_SIDE)
+      const hidden = zoneLabels.length > 0 ? await gemini.describeHidden(input, zoneLabels, vehicle).catch(() => "") : ""
+      // El editor a veces cambia el encuadre o redibuja la escena: se alinea y, si no empata, se reintenta una vez
+      let edited: Buffer | null = null
+      let align: Awaited<ReturnType<typeof alignEdit>> | null = null
+      for (let attempt = 0; attempt < 2; attempt++) {
+        edited = await gemini.edit(input, zoneLabels, { ...editOptions, hidden }, target.width, target.height)
+        if (process.env.PHOTO_AI_DEBUG_DIR) {
+          await fs.writeFile(path.join(process.env.PHOTO_AI_DEBUG_DIR, `${path.parse(originalUrl).name}-z${zone.left}-raw${attempt}.png`), edited)
+        }
+        align = await alignEdit(target, edited, local)
+        if (align.residual <= MAX_RESIDUAL) break
       }
-      align = await alignEdit(img, edited, boxes)
-      if (align.residual <= MAX_RESIDUAL) break
+      if (!edited || !align || align.residual > MAX_RESIDUAL) {
+        throw new Error(`La edición de la IA no coincide con la foto original (diferencia ${align?.residual.toFixed(1)})`)
+      }
+      const pct = await blendEdits(target, edited, local, align)
+      replacedPct += (pct * target.width * target.height) / (W * H)
+      if (!full) pasteRaw(img, target, zone)
     }
-    if (!edited || !align || align.residual > MAX_RESIDUAL) {
-      throw new Error(`La edición de la IA no coincide con la foto original (diferencia ${align?.residual.toFixed(1)})`)
-    }
-    replacedPct = await blendEdits(img, edited, boxes, align)
   }
 
   // 2) Placas de otros vehículos: se difuminan por código

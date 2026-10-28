@@ -15,7 +15,7 @@ import { urlKey } from "@/lib/photo-ai/keys"
 // Un texto con alertas, o un anuncio sin ninguna foto publicable, queda en "pending".
 
 // Por encima de este % reconstruido por la IA, la foto la revisa una persona (podría ocultar daños)
-export const AUTO_REVIEW_MAX_REPLACED_PCT = 5
+export const AUTO_REVIEW_MAX_REPLACED_PCT = 10
 
 interface ListingText {
   make: string

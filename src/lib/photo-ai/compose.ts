@@ -18,6 +18,30 @@ export async function loadRaw(input: Buffer | string): Promise<RawImage> {
   return { data, width: info.width, height: info.height }
 }
 
+export interface Region {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+// Copia una región de la foto (para editar solo la zona de los objetos con más detalle)
+export function cropRaw(img: RawImage, r: Region): RawImage {
+  const data = Buffer.alloc(r.width * r.height * 3)
+  for (let y = 0; y < r.height; y++) {
+    const from = ((r.top + y) * img.width + r.left) * 3
+    img.data.copy(data, y * r.width * 3, from, from + r.width * 3)
+  }
+  return { data, width: r.width, height: r.height }
+}
+
+// Devuelve la región editada a su lugar en la foto completa
+export function pasteRaw(img: RawImage, part: RawImage, r: Region) {
+  for (let y = 0; y < r.height; y++) {
+    part.data.copy(img.data, ((r.top + y) * img.width + r.left) * 3, y * r.width * 3, (y + 1) * r.width * 3)
+  }
+}
+
 export function encodeJpeg(img: RawImage, quality = 92) {
   return sharp(img.data, { raw: { width: img.width, height: img.height, channels: 3 } }).jpeg({ quality, mozjpeg: true }).toBuffer()
 }
