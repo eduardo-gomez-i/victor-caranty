@@ -2,22 +2,24 @@
 
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Images, Loader2, Upload, X } from 'lucide-react'
+import { MIN_PHOTOS } from '@/constants/vehicles'
 
 // Los 12 ángulos recomendados, en el orden en que conviene subirlos (el 1 es la foto principal).
 // Las imágenes de ejemplo vienen de /public/brand/guia/angulo-NN.jpg.
+// "essential": los MIN_PHOTOS ángulos que no deben faltar (frente, atrás, costados e interior).
 const SHOTS = [
-  { title: 'Frente 3/4 izquierda', hint: 'El frente y un costado. Será tu foto principal.' },
-  { title: 'Frente directa', hint: 'Todo el frente del auto, centrado.' },
-  { title: 'Frente 3/4 derecha', hint: 'El frente y el otro costado.' },
-  { title: 'Trasera 3/4 izquierda', hint: 'La parte trasera y un costado.' },
-  { title: 'Trasera directa', hint: 'Toda la parte trasera, centrada.' },
-  { title: 'Trasera 3/4 derecha', hint: 'La parte trasera y el otro costado.' },
-  { title: 'Lateral izquierda', hint: 'Todo un costado del auto.' },
-  { title: 'Lateral derecha', hint: 'El otro costado completo.' },
-  { title: 'Interior delantero', hint: 'Volante, tablero y consola.' },
-  { title: 'Asientos delanteros', hint: 'Estado y ajuste de los asientos.' },
-  { title: 'Asientos traseros', hint: 'Estado y espacio de los asientos.' },
-  { title: 'Cajuela', hint: 'Vacía, para mostrar el espacio y su estado.' },
+  { title: 'Frente 3/4 izquierda', hint: 'El frente y un costado. Será tu foto principal.', essential: true },
+  { title: 'Frente directa', hint: 'Todo el frente del auto, centrado.', essential: true },
+  { title: 'Frente 3/4 derecha', hint: 'El frente y el otro costado.', essential: false },
+  { title: 'Trasera 3/4 izquierda', hint: 'La parte trasera y un costado.', essential: false },
+  { title: 'Trasera directa', hint: 'Toda la parte trasera, centrada.', essential: true },
+  { title: 'Trasera 3/4 derecha', hint: 'La parte trasera y el otro costado.', essential: false },
+  { title: 'Lateral izquierda', hint: 'Todo un costado del auto.', essential: true },
+  { title: 'Lateral derecha', hint: 'El otro costado completo.', essential: true },
+  { title: 'Interior delantero', hint: 'Volante, tablero y consola.', essential: true },
+  { title: 'Asientos delanteros', hint: 'Estado y ajuste de los asientos.', essential: true },
+  { title: 'Asientos traseros', hint: 'Estado y espacio de los asientos.', essential: true },
+  { title: 'Cajuela', hint: 'Vacía, para mostrar el espacio y su estado.', essential: false },
 ].map((shot, i) => ({ ...shot, src: `/brand/guia/angulo-${String(i + 1).padStart(2, '0')}.jpg` }))
 
 // Vista previa debajo del título: frente, atrás, costado e interior
@@ -48,7 +50,6 @@ interface Props {
 export default function PhotoGuide({ uploaded, uploading = false, onUpload }: Props) {
   const [open, setOpen] = useState(false)
   const [zoom, setZoom] = useState<number | null>(null)
-  const done = Math.min(uploaded, SHOTS.length)
 
   useEffect(() => {
     if (!open && zoom === null) return
@@ -82,7 +83,6 @@ export default function PhotoGuide({ uploaded, uploading = false, onUpload }: Pr
             <span className="block font-medium text-gray-900">¿Qué fotos debo tomar?</span>
             <span className="block text-sm text-gray-600">
               Mira los ejemplos de cada ángulo
-              {done > 0 && <> · {done} de {SHOTS.length} fotos</>}
             </span>
           </span>
           <ChevronRight className="h-5 w-5 shrink-0 text-blue-600" />
@@ -99,6 +99,7 @@ export default function PhotoGuide({ uploaded, uploading = false, onUpload }: Pr
         <button type="button" onClick={() => setOpen(true)} className="px-4 pb-3 text-sm font-medium text-blue-600 hover:underline">
           Ver los {SHOTS.length} ángulos →
         </button>
+        <MinimumProgress uploaded={uploaded} className="border-t px-4 py-3" />
       </div>
 
       {open && (
@@ -115,7 +116,9 @@ export default function PhotoGuide({ uploaded, uploading = false, onUpload }: Pr
                 <h2 id="photo-guide-title" className="text-lg font-semibold text-gray-900">
                   {SHOTS.length} fotos recomendadas para tu auto
                 </h2>
-                <p className="text-sm text-gray-600">Sube las fotos en este orden. Toca un ejemplo para verlo más grande.</p>
+                <p className="text-sm text-gray-600">
+                  Sube al menos {MIN_PHOTOS}; las marcadas como <b>Mínima</b> no deben faltar. Toca un ejemplo para verlo más grande.
+                </p>
               </div>
               <button type="button" onClick={() => setOpen(false)} className="rounded-full p-1 text-gray-500 hover:bg-gray-100" aria-label="Cerrar">
                 <X className="h-5 w-5" />
@@ -125,7 +128,7 @@ export default function PhotoGuide({ uploaded, uploading = false, onUpload }: Pr
             <div className="flex-1 overflow-y-auto px-4 py-4">
               <ol className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 {SHOTS.map((shot, i) => (
-                  <li key={shot.title} className={`overflow-hidden rounded-lg border ${i < done ? 'border-green-300' : 'border-gray-200'}`}>
+                  <li key={shot.title} className="overflow-hidden rounded-lg border border-gray-200">
                     <button type="button" onClick={() => setZoom(i)} className="block w-full" aria-label={`Ampliar ejemplo ${i + 1}: ${shot.title}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={shot.src} alt="" className="aspect-[8/5] w-full object-cover bg-gray-100" loading="lazy" />
@@ -133,7 +136,9 @@ export default function PhotoGuide({ uploaded, uploading = false, onUpload }: Pr
                     <div className="p-2">
                       <p className="text-sm font-medium text-gray-900">
                         {i + 1}. {shot.title}
-                        {i < done && <span className="ml-1 text-green-600">✓</span>}
+                        {shot.essential && (
+                          <span className="ml-1.5 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-800 align-middle">Mínima</span>
+                        )}
                       </p>
                       <p className="text-xs text-gray-600">{shot.hint}</p>
                     </div>
@@ -152,9 +157,7 @@ export default function PhotoGuide({ uploaded, uploading = false, onUpload }: Pr
             </div>
 
             <div className="flex items-center justify-between gap-3 border-t px-4 py-3">
-              <span className="text-sm text-gray-600">
-                {done} de {SHOTS.length} fotos
-              </span>
+              <MinimumProgress uploaded={uploaded} className="min-w-0 flex-1" />
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -211,5 +214,20 @@ export default function PhotoGuide({ uploaded, uploading = false, onUpload }: Pr
           </div>
         )}
     </>
+  )
+}
+
+// Checklist del mínimo de fotos para publicar
+function MinimumProgress({ uploaded, className = '' }: { uploaded: number; className?: string }) {
+  const ok = uploaded >= MIN_PHOTOS
+  return (
+    <div className={className}>
+      <p className={`text-sm font-medium ${ok ? 'text-green-700' : 'text-gray-800'}`}>
+        {ok ? `✓ ${uploaded} fotos: ya puedes publicar` : `${uploaded} de ${MIN_PHOTOS} fotos mínimas`}
+      </p>
+      <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-gray-200">
+        <div className={`h-full rounded-full ${ok ? 'bg-green-500' : 'bg-primary'}`} style={{ width: `${Math.min(100, (uploaded / MIN_PHOTOS) * 100)}%` }} />
+      </div>
+    </div>
   )
 }

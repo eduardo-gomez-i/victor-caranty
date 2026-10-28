@@ -51,3 +51,6 @@ export const INVOICE_TYPES = [
 ] as const;
 
 export const TRANSMISSIONS = ['Manual', 'Automática'] as const;
+
+// Fotos mínimas para que un vendedor publique (de los 12 ángulos de la guía)
+export const MIN_PHOTOS = 8;

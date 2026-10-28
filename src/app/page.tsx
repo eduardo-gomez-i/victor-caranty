@@ -51,7 +51,7 @@ export default async function Home() {
             <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-3">
               <div className="flex items-center gap-2 text-white">
                 <ShieldCheck className="h-6 w-6 text-primary" />
-                <span>Garantía legal</span>
+                <span>Revisión mecánica y legal</span>
               </div>
               <div className="flex items-center gap-2 text-white">
                 <Handshake className="h-6 w-6 text-primary" />

@@ -6,6 +6,7 @@ import { requireRole } from '@/lib/auth'
 import { enqueuePhotos, photoAiEnabled } from '@/lib/photo-ai/worker'
 import { afterListingSaved, initialListingStatus, listingTextReasons } from '@/lib/listing-review'
 import { saveVerifiedSpecFromVehicle } from '@/lib/vehicle-specs'
+import { MIN_PHOTOS } from '@/constants/vehicles'
 
 export const runtime = 'nodejs'
 
@@ -72,6 +73,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validation.error.format() }, { status: 400 })
     }
     const { images, ...vehicleData } = validation.data
+    if (user.role !== 'ADMIN' && (images?.length ?? 0) < MIN_PHOTOS) {
+      return NextResponse.json({ error: `Sube al menos ${MIN_PHOTOS} fotos de tu auto.` }, { status: 400 })
+    }
 
     // Nadie se publica antes de que la IA termine las fotos. Al admin no se le revisa el texto.
     const isAdmin = user.role === 'ADMIN'

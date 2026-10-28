@@ -50,7 +50,7 @@ export default function Footer() {
                 <ul className="space-y-4 text-sm text-white/80">
                   <li className="flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-primary shrink-0" />
-                    <span>San Juan del Río, Querétaro, México</span>
+                    <span>Querétaro, Qro.</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-primary shrink-0" />

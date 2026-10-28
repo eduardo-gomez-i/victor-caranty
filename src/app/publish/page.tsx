@@ -15,7 +15,7 @@ import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
 import { PhotoAiBadge, PhotoAiProgress, usePhotoAi } from '@/components/vehicles/usePhotoAi'
-import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
+import { INVOICE_TYPES, MIN_PHOTOS, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
   'Aguascalientes',
@@ -77,7 +77,8 @@ export default function PublishPage() {
     type: ''
   })
 
-  const { status: sessionStatus } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
+  const isAdmin = session?.user?.role === 'ADMIN'
   useEffect(() => {
     if (sessionStatus === 'unauthenticated') {
       router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`)
@@ -183,6 +184,9 @@ export default function PublishPage() {
       }
       if (!formData.state) {
         throw new Error('Selecciona el estado')
+      }
+      if (!isAdmin && images.length < MIN_PHOTOS) {
+        throw new Error(`Sube al menos ${MIN_PHOTOS} fotos de tu auto (llevas ${images.length}). Revisa la guía de ángulos.`)
       }
 
       const payload = {

@@ -12,7 +12,7 @@ import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
 import { PhotoAiBadge, PhotoAiProgress, usePhotoAi } from '@/components/vehicles/usePhotoAi'
-import { INVOICE_TYPES, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
+import { INVOICE_TYPES, MIN_PHOTOS, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
   'Aguascalientes','Baja California','Baja California Sur','Campeche','Chiapas','Chihuahua',
@@ -141,6 +141,10 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
       const make = formData.make === '__other__' ? formData.customMake.trim() : formData.make
       if (!make) throw new Error('Ingresa la marca')
       if (!formData.state) throw new Error('Selecciona el estado')
+      // Anuncios anteriores con menos fotos pueden editarse, pero sin quitar más fotos
+      if (!isAdmin && images.length < MIN_PHOTOS && images.length < sortedImages.length) {
+        throw new Error(`El anuncio necesita al menos ${MIN_PHOTOS} fotos.`)
+      }
 
       const res = await fetch(`/api/my/vehicles/${vehicle.id}`, {
         method: 'PATCH',

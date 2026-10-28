@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { checkListingText } from "@/lib/moderation"
+import { LISTING_FOOTER } from "@/lib/listing-footer"
 import { notifyAdminsAboutPendingVehicle } from "@/lib/notify-admin"
 import { PHOTO_FLAG_LABELS, parseFlags } from "@/lib/photo-ai/flags"
 import { urlKey } from "@/lib/photo-ai/keys"
@@ -23,8 +24,22 @@ interface ListingText {
   description?: string | null
 }
 
+// Líneas del pie oficial de EasyMotores (lo agrega el generador de descripciones): no son contacto ni spam
+const FOOTER_LINES = new Set(LISTING_FOOTER.split("\n").map((l) => l.trim()).filter(Boolean))
+
+function withoutOfficialFooter(text?: string | null) {
+  if (!text) return text
+  return text
+    .replace(LISTING_FOOTER, "")
+    .split("\n")
+    .filter((line) => !FOOTER_LINES.has(line.trim()))
+    .join("\n")
+}
+
 export function listingTextReasons(v: ListingText) {
-  return checkListingText([v.make, v.model, v.version, v.description]).map((r) => `Descripción: ${r.toLowerCase()}`)
+  return checkListingText([v.make, v.model, v.version, withoutOfficialFooter(v.description)]).map(
+    (r) => `Descripción: ${r.toLowerCase()}`
+  )
 }
 
 // Estado inicial de una publicación (o edición). El admin no pasa por la revisión de texto, pero su

@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client"
 import { enqueuePhotos, photoAiEnabled } from "@/lib/photo-ai/worker"
 import { afterListingSaved, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
 import { saveVerifiedSpecFromVehicle } from "@/lib/vehicle-specs"
+import { MIN_PHOTOS } from "@/constants/vehicles"
 
 export const runtime = "nodejs"
 
@@ -47,6 +48,14 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     }
     if (existing.userId !== session.user.id && session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 })
+    }
+
+    // Vendedor: no puede dejar el anuncio con menos fotos del mínimo (los anteriores con menos pueden editarse sin quitar)
+    if (session.user.role !== "ADMIN" && data.images !== undefined && data.images.length < MIN_PHOTOS) {
+      const current = await prisma.image.count({ where: { vehicleId: id } })
+      if (data.images.length < current) {
+        return NextResponse.json({ error: `El anuncio necesita al menos ${MIN_PHOTOS} fotos.` }, { status: 400 })
+      }
     }
 
     const isFullEdit = data.make !== undefined || data.model !== undefined ||
