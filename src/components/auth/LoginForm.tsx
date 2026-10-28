@@ -1,13 +1,12 @@
  'use client'
  
  import { useState, Suspense } from 'react'
- import { useRouter, useSearchParams } from 'next/navigation'
+ import { useSearchParams } from 'next/navigation'
  import Input from '@/components/ui/Input'
  import Button from '@/components/ui/Button'
  import { signIn } from 'next-auth/react'
  
  export default function LoginForm() {
-   const router = useRouter()
    const sp = useSearchParams()
    const [email, setEmail] = useState('')
    const [password, setPassword] = useState('')
@@ -31,8 +30,8 @@
      } else {
        const target = sp.get('redirect')
        const redirectTo = target && target.startsWith('/') && !target.startsWith('//') ? target : '/publish'
-       router.push(redirectTo)
-       router.refresh()
+       // Carga completa: la siguiente página arranca con la sesión ya actualizada
+       window.location.assign(redirectTo)
      }
    }
  

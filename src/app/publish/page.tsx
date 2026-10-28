@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { getSession, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Upload, X, Loader2 } from 'lucide-react'
 import Input from '@/components/ui/Input'
@@ -80,8 +80,16 @@ export default function PublishPage() {
   const { data: session, status: sessionStatus } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN'
   useEffect(() => {
-    if (sessionStatus === 'unauthenticated') {
-      router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+    if (sessionStatus !== 'unauthenticated') return
+    // Justo después de iniciar sesión el estado del cliente puede venir desfasado: se confirma con el servidor
+    let cancelled = false
+    void getSession().then((fresh) => {
+      if (!fresh && !cancelled) {
+        router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+      }
+    })
+    return () => {
+      cancelled = true
     }
   }, [sessionStatus, router])
 

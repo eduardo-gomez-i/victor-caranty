@@ -49,8 +49,8 @@
        } else {
           const target = sp.get('redirect')
        const redirectTo = target && target.startsWith('/') && !target.startsWith('//') ? target : '/publish'
-          router.push(redirectTo)
-          router.refresh()
+          // Carga completa: la siguiente página arranca con la sesión ya actualizada
+          window.location.assign(redirectTo)
        }
  
      } catch (err) {
