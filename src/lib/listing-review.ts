@@ -167,6 +167,23 @@ export async function finalizeAutoReview(vehicleId: string, origin?: string) {
   await notify({ ...vehicle, status }, photos.reasons, origin, status === "active")
 }
 
+// El admin aprueba el anuncio completo: sus fotos ocultas se publican (la versión editada si existe).
+// Quedan marcadas como decididas por el admin, así que la revisión automática ya no las vuelve a ocultar.
+export async function publishHiddenPhotos(vehicleId: string) {
+  const hidden = await prisma.image.findMany({ where: { vehicleId, hidden: true } })
+  for (const image of hidden) {
+    const job = await prisma.photoJob.findFirst({ where: { OR: [{ urlKey: urlKey(image.url) }, { processedUrl: image.url }] } })
+    const edited = job?.status === "ready" && job.processedUrl
+    await prisma.$transaction([
+      prisma.image.update({ where: { id: image.id }, data: { hidden: false, ...(edited && { url: job.processedUrl! }) } }),
+      ...(job && job.status !== "approved" && job.status !== "pending" && job.status !== "processing"
+        ? [prisma.photoJob.update({ where: { id: job.id }, data: { status: edited ? "approved" : "original" } })]
+        : []),
+    ])
+  }
+  return hidden.length
+}
+
 // Vehículos que usan esta foto (original o editada): aplica el resultado y cierra su revisión si toca
 export async function finalizeVehiclesUsingPhoto(originalUrl: string, processedUrl?: string | null) {
   const images = await prisma.image.findMany({

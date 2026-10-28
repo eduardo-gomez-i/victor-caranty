@@ -52,7 +52,7 @@ plate: the car's license plate, 4 outer corners including its frame, in order to
 items: every thing that must be removed before publishing: loose objects that are NOT part of the car (trash, bottles, cans, paper, tissues, rags, clothes, bags, backpacks, boxes, tape, toys, brochures, cables, tools, shoes), loose papers, notes, tickets or signs placed on or behind the windshield or on the dashboard, and any people. Do NOT list car parts or accessories that belong to the car (seats, seat belts, buckles, floor mats, cargo cover, headrests, trim), other parked cars, nor stains, wear or damage. Use short, specific labels in Spanish (e.g. "botella de agua", "persona", "mochila", "papel en el parabrisas").
 other_plates: license plates of OTHER vehicles in the photo (not the car being sold), even small or partly visible. Empty if none.
 flags (content moderation for a car marketplace):
-- contact_info: phone numbers, emails, websites or social media handles written anywhere in the photo (signs like "se vende" with a number, stickers, text overlays). A license plate is NOT contact info.
+- contact_info: phone numbers, emails, websites or social media handles written anywhere in the photo (signs like "se vende" with a number, stickers, text overlays). A license plate is NOT contact info. The EasyMotores / EasyMotores.com plate, sticker or logo is our own brand: it is NOT contact_info nor watermark.
 - watermark: logos, watermarks or text overlays from other websites, marketplaces, dealers or apps added on top of the photo.
 - not_car: the photo is not of a car (or its parts/interior), e.g. a meme, a screenshot, a person, a document.
 - inappropriate: nudity, violence, offensive gestures or symbols.

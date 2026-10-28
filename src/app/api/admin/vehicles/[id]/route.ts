@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
 import { saveVerifiedSpecFromVehicle } from '@/lib/vehicle-specs'
+import { publishHiddenPhotos } from '@/lib/listing-review'
 
 export async function PATCH(
   request: NextRequest,
@@ -23,6 +24,12 @@ export async function PATCH(
     })
 
     if (vehicle.status === 'active') {
+      // Aprobar el anuncio publica también las fotos que la revisión automática dejó ocultas
+      try {
+        await publishHiddenPhotos(vehicle.id)
+      } catch (e) {
+        console.error('No se pudieron publicar las fotos ocultas:', e)
+      }
       try {
         await saveVerifiedSpecFromVehicle(vehicle)
       } catch (e) {
