@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useSession, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
+import { logout } from "@/lib/logout"
 import { LogOut } from "lucide-react"
 import Button from "@/components/ui/Button"
 
@@ -26,7 +27,7 @@ export default function AdminTopbar() {
           <Button
             size="sm"
             className="rounded-full px-4 bg-slate-800 hover:bg-slate-700 text-white gap-2"
-            onClick={() => signOut()}
+            onClick={() => void logout()}
           >
             <LogOut className="h-4 w-4" />
             Salir

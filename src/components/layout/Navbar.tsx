@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { LogOut, Menu, X } from 'lucide-react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
+import { logout } from '@/lib/logout'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import React, { useEffect, useState } from 'react'
@@ -100,7 +101,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
                 <Button
                   size="md"
                   className="rounded-full px-5 bg-slate-800 hover:bg-slate-700 text-white gap-2"
-                  onClick={() => signOut()}
+                  onClick={() => void logout()}
                 >
                   <LogOut size={16} />
                   Salir
@@ -172,7 +173,7 @@ export default function Navbar({ transparent = false, showSearch = true, searchD
                   className="rounded-full px-5 bg-slate-800 hover:bg-slate-700 text-white gap-2"
                   onClick={() => {
                     setMobileOpen(false)
-                    signOut()
+                    void logout()
                   }}
                 >
                   <LogOut size={16} />
