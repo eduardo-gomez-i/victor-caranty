@@ -7,6 +7,7 @@ import { enqueuePhotos, photoAiEnabled } from "@/lib/photo-ai/worker"
 import { afterListingSaved, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
 import { saveVerifiedSpecFromVehicle } from "@/lib/vehicle-specs"
 import { MIN_PHOTOS } from "@/constants/vehicles"
+import { deletePhotoFiles } from "@/lib/vehicle-files"
 
 export const runtime = "nodejs"
 
@@ -50,8 +51,8 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: "No autorizado" }, { status: 403 })
     }
 
-    // Vendedor: no puede dejar el anuncio con menos fotos del mínimo (los anteriores con menos pueden editarse sin quitar)
-    if (session.user.role !== "ADMIN" && data.images !== undefined && data.images.length < MIN_PHOTOS) {
+    // Nadie (tampoco el admin) puede dejar el anuncio con menos fotos del mínimo (los anteriores con menos pueden editarse sin quitar)
+    if (data.images !== undefined && data.images.length < MIN_PHOTOS) {
       const current = await prisma.image.count({ where: { vehicleId: id } })
       if (data.images.length < current) {
         return NextResponse.json({ error: `El anuncio necesita al menos ${MIN_PHOTOS} fotos.` }, { status: 400 })
@@ -175,8 +176,14 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json({ error: "No autorizado" }, { status: 403 })
     }
 
+    const images = await prisma.image.findMany({ where: { vehicleId: id }, select: { url: true } })
     await prisma.image.deleteMany({ where: { vehicleId: id } })
     await prisma.vehicle.delete({ where: { id } })
+    try {
+      await deletePhotoFiles(images.map((i) => i.url))
+    } catch (e) {
+      console.error("No se pudieron borrar las fotos del disco:", e)
+    }
 
     return NextResponse.json({ ok: true })
   } catch (error) {

@@ -94,9 +94,9 @@ export default async function VehicleDetail({ params }: Props) {
             <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
             <div>
               <AutoRefresh active intervalMs={8000} />
-              <h3 className="text-blue-800 font-medium">Estamos editando tus fotos con IA</h3>
+              <h3 className="text-blue-800 font-medium">Estamos preparando tu anuncio</h3>
               <p className="text-blue-700 text-sm mt-1">
-                Cubrimos la placa y quitamos objetos. Tu anuncio será visible para el público en cuanto terminen, normalmente en uno o dos minutos. Las fotos que no correspondan al auto se ocultarán hasta que las revise un administrador.
+                Será visible para el público en unos minutos. No tienes que hacer nada más: puedes cerrar esta página.
               </p>
             </div>
           </div>

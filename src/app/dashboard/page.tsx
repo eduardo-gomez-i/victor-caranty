@@ -87,7 +87,7 @@ export default async function DashboardPage() {
                         }`}
                       >
                         {v.status === "active" ? "Activo" : 
-                         v.status === "reviewing" ? "Editando fotos…" :
+                         v.status === "reviewing" ? "Publicando…" :
                          v.status === "pending" ? "En revisión" :
                          v.status === "rejected" ? "Rechazado" :
                          v.status === "sold" ? "Vendido" : "Pausado"}

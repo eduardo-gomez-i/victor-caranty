@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import fs from 'fs/promises'
 import { requireAuth } from '@/lib/auth'
-import { enqueuePhotos } from '@/lib/photo-ai/worker'
 
 export const runtime = 'nodejs'
 
@@ -49,17 +48,8 @@ export async function POST(request: NextRequest) {
     // nginx (www-data) sirve /uploads; chmod explícito para no depender del umask del proceso
     await fs.chmod(filepath, 0o644)
 
-    const url = `/uploads/${filename}`
-    // La edición con IA arranca desde que se sube, para que al publicar ya esté lista
-    if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-      try {
-        const vehicle = String(form.get('vehicle') ?? '').slice(0, 120)
-        await enqueuePhotos([url], vehicle || undefined)
-      } catch (e) {
-        console.error('No se pudo encolar la foto para IA:', e)
-      }
-    }
-    return NextResponse.json({ url })
+    // La edición con IA arranca al publicar o guardar el anuncio (no al subir), para no procesar fotos que se descartan
+    return NextResponse.json({ url: `/uploads/${filename}` })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

@@ -1,7 +1,7 @@
 import fs from "fs/promises"
 import path from "path"
 import prisma from "@/lib/prisma"
-import { finalizeVehiclesUsingPhoto } from "@/lib/listing-review"
+import { finalizeAutoReview, finalizeVehiclesUsingPhoto } from "@/lib/listing-review"
 import { urlKey } from "./keys"
 import { Box, Detection, EditOptions, GeminiClient } from "./gemini"
 import { Region, alignEdit, applyPlate, blendEdits, blurBoxes, cropRaw, downscaledJpeg, encodeJpeg, loadRaw, pasteRaw } from "./compose"
@@ -24,10 +24,10 @@ export function photoAiEnabled() {
 
 export { urlKey }
 
-// Crea trabajos para las fotos subidas que aún no tienen uno y arranca el procesamiento.
-// Solo fotos locales (/uploads/...); las ya procesadas (/uploads/ai/...) se ignoran.
-// vehicle: año, marca y modelo si ya se conocen (al subir desde el formulario), para reconstruir con fidelidad
-export async function enqueuePhotos(urls: string[], vehicle?: string) {
+// Crea trabajos para las fotos de un anuncio recién publicado o guardado que aún no tienen uno, y arranca
+// el procesamiento. Solo fotos locales (/uploads/...); las ya procesadas (/uploads/ai/...) se ignoran.
+// El año, marca y modelo para reconstruir con fidelidad se toman del anuncio al procesar (vehicleNameForPhoto).
+export async function enqueuePhotos(urls: string[]) {
   if (!photoAiEnabled()) return
   const candidates = urls.filter((u) => u.startsWith("/uploads/") && !u.startsWith("/uploads/ai/"))
   if (candidates.length === 0) return
@@ -41,7 +41,6 @@ export async function enqueuePhotos(urls: string[], vehicle?: string) {
         urlKey: urlKey(originalUrl),
         originalUrl,
         costUsd: 0,
-        ...(vehicle && { options: { vehicle } }),
       })),
       skipDuplicates: true,
     })
@@ -63,6 +62,35 @@ export function kickWorker() {
       const pending = await prisma.photoJob.count({ where: { status: "pending" } }).catch(() => 0)
       if (pending > 0) kickWorker()
     })
+}
+
+// La cola vive en memoria: si el servidor se reinicia (deploy) a media edición, las fotos quedarían
+// "editándose" para siempre y el anuncio sin publicarse. Este vigilante corre desde que arranca el
+// servidor: retoma la cola y publica los anuncios cuyas fotos ya terminaron.
+const WATCHDOG_MS = 60_000
+const watchdog = globalThis as unknown as { __photoWatchdog?: ReturnType<typeof setInterval> }
+
+export function startPhotoWatchdog() {
+  if (!photoAiEnabled() || watchdog.__photoWatchdog) return
+  const tick = async () => {
+    try {
+      const stuck = await prisma.photoJob.count({
+        where: {
+          OR: [
+            { status: "pending" },
+            { status: "processing", updatedAt: { lt: new Date(Date.now() - STALE_MS) } },
+          ],
+        },
+      })
+      if (stuck > 0) kickWorker()
+      const reviewing = await prisma.vehicle.findMany({ where: { status: "reviewing" }, select: { id: true } })
+      for (const v of reviewing) await finalizeAutoReview(v.id)
+    } catch (error) {
+      console.error("photo-ai: el vigilante falló:", error)
+    }
+  }
+  void tick()
+  watchdog.__photoWatchdog = setInterval(() => void tick(), WATCHDOG_MS)
 }
 
 async function runQueue() {

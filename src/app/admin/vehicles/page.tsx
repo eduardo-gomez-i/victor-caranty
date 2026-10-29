@@ -2,6 +2,7 @@ import { requireRole } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table'
 import AdminVehicleActions from '@/components/admin/AdminVehicleActions'
+import DeleteVehicleButton from '@/components/admin/DeleteVehicleButton'
 import Link from 'next/link'
 import { EyeOff, Images, Pencil } from 'lucide-react'
 import VehicleStatusBadge from '@/components/admin/VehicleStatusBadge'
@@ -107,6 +108,7 @@ export default async function AdminVehiclesPage() {
                       >
                         <Pencil className="h-4 w-4 text-primary" />
                       </Link>
+                      <DeleteVehicleButton vehicleId={vehicle.id} vehicleName={`${vehicle.make} ${vehicle.model} ${vehicle.year}`} />
                     </div>
                   </TableCell>
                 </TableRow>

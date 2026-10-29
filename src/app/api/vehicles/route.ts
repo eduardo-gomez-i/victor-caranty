@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validation.error.format() }, { status: 400 })
     }
     const { images, ...vehicleData } = validation.data
-    if (user.role !== 'ADMIN' && (images?.length ?? 0) < MIN_PHOTOS) {
+    if ((images?.length ?? 0) < MIN_PHOTOS) {
       return NextResponse.json({ error: `Sube al menos ${MIN_PHOTOS} fotos de tu auto.` }, { status: 400 })
     }
 
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         console.error('No se pudo guardar la ficha verificada:', e)
       }
     }
-    // Las fotos se procesan desde que se subieron: si ya terminaron, se publica en este momento
+    // Si las fotos ya estaban procesadas (por ejemplo, reutilizadas), se publica en este momento
     try {
       await afterListingSaved(vehicle.id, review.reasons, request.nextUrl.origin)
     } catch (e) {

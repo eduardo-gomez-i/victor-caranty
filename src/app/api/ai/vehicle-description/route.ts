@@ -13,6 +13,17 @@ const DEFAULT_MODEL = "gpt-4.1-mini"
 const LOW_KM_PER_YEAR = 12_000
 // Tipos de VehicleTypeSelector que se nombran en femenino ("una camioneta").
 const FEMININE_TYPES = new Set(["suv", "pickup", "minitruck"])
+// La descripción se pega en Marketplace: pocas características y solo las que distinguen a la versión
+const MAX_LISTING_FEATURES = 15
+// Equipamiento que trae cualquier auto moderno; no aporta en el anuncio (también limpia fichas guardadas antes)
+const COMMON_FEATURE = /bluetooth|\busb\b|\babs\b|\bebd\b|isofix|latch|abatible|presi[oó]n de (las )?llantas|elevadores|vidrios el[eé]ctricos|espejos el[eé]ctricos|cierre centralizado/i
+const AUDIO = /audio|bocinas|sonido|est[eé]reo/i
+const PREMIUM_AUDIO = /bose|harman|beats|jbl|burmester|bang|b&o|sony|fender|alpine|infinity|meridian|dynaudio|focal|levinson|canton|monsoon|krell|rockford/i
+
+function isListingFeature(feature: string) {
+  if (COMMON_FEATURE.test(feature)) return false
+  return !AUDIO.test(feature) || PREMIUM_AUDIO.test(feature)
+}
 
 const inputSchema = z.object({
   make: z.string().trim().min(1).max(60),
@@ -37,11 +48,12 @@ tagline: una frase corta (máx. 15 palabras) que presente el vehículo por su ti
 
 transmissions: TODAS las transmisiones que se ofrecieron para esa versión y año en México, con tipo y velocidades (ej. ["Transmisión manual 6 velocidades", "Transmisión automática Tiptronic 6 velocidades"]). Vacío si no está confirmado.
 
-features: hasta 22 elementos cortos (máx. 8 palabras), sin punto final y SIN la transmisión.
-La lista siguiente es solo el ORDEN, no una lista a llenar: incluye un elemento únicamente si la fuente confirma que esa versión y año lo trae de serie. Es mejor 10 elementos correctos que 22 dudosos. Las versiones de entrada y medias suelen no traer techo panorámico, acceso sin llave, faros LED ni asistencias avanzadas; no los incluyas sin confirmación.
+features: entre 10 y ${MAX_LISTING_FEATURES} elementos cortos (máx. 8 palabras), sin punto final y SIN la transmisión. El texto se pega en Facebook Marketplace: solo lo que distingue a esta versión y le importa al comprador.
+La lista siguiente es solo el ORDEN, no una lista a llenar: incluye un elemento únicamente si la fuente confirma que esa versión y año lo trae de serie. Es mejor 8 elementos correctos que ${MAX_LISTING_FEATURES} dudosos. Las versiones de entrada y medias suelen no traer techo panorámico, acceso sin llave, faros LED ni asistencias avanzadas; no los incluyas sin confirmación.
 No uses elementos vagos como "Asistencias de seguridad" o "Paquete Premier": nombra la función concreta o omítelo.
+OMITE lo que ya trae cualquier auto moderno: Bluetooth, USB, sistema de audio o número de bocinas (solo menciona el audio si es de marca premium, ej. "Audio Bose"), frenos ABS / EBD, control de presión de llantas, ISOFIX, asientos traseros abatibles, elevadores eléctricos, espejos eléctricos, cierre centralizado.
 Orden:
-motor (cilindrada, cilindros o turbo, hp), tracción, rines (material y medida), techo panorámico o quemacocos, acceso sin llave y botón de encendido, vestiduras y ajustes de asientos, clima, volante multifunción, control de crucero, pantalla (medida), Apple CarPlay / Android Auto, Bluetooth y USB, audio (bocinas o marca), cámara de reversa o 360°, sensores de estacionamiento, asistencias (punto ciego, crucero adaptativo, etc.), bolsas de aire (número), frenos ABS + EBD, control de estabilidad, control de presión de llantas, ISOFIX, asientos traseros abatibles, faros LED, paquetes de la versión.
+motor (cilindrada, cilindros o turbo, hp), tracción, modos de manejo, rines (material y medida), techo panorámico o quemacocos, acceso sin llave y botón de encendido, vestiduras y ajustes de asientos, clima, volante multifunción, control de crucero, pantalla (medida), Apple CarPlay / Android Auto, audio de marca premium, cámara de reversa o 360°, sensores de estacionamiento, asistencias (punto ciego, crucero adaptativo, etc.), bolsas de aire (número), faros LED, paquetes de la versión.
 - Escribe como en este ejemplo: "Motor 1.5L 4 cilindros", "Rines de aluminio de 16”", "Pantalla táctil de 8”", "4 bolsas de aire", "Frenos ABS + EBD".
 - Incluye solo equipamiento de serie confirmado para esa versión y año en México. Si un dato no está confirmado, omítelo o escríbelo sin la cifra (ej. "Rines de aluminio").
 - Si no se indica versión, usa solo el equipamiento común a todas las versiones de ese modelo y año.
@@ -209,7 +221,7 @@ function buildDescription(v: VehicleInput, spec: Spec, transmissions: string[]) 
   const km = v.mileage.toLocaleString("es-MX")
   const transmissionLabel = v.transmission === "Automática" ? "AUTOMÁTICO" : "MANUAL"
 
-  const features = [...spec.features]
+  const features = spec.features.filter(isListingFeature).slice(0, MAX_LISTING_FEATURES)
   const afterEngine = /^motor\b/i.test(features[0] ?? "") ? 1 : 0
   features.splice(afterEngine, 0, transmissionLine(v.transmission, transmissions))
 

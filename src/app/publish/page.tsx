@@ -12,9 +12,9 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
 import PhotoGuide from '@/components/vehicles/PhotoGuide'
+import { compressImage } from '@/lib/compress-image'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
-import { PhotoAiBadge, PhotoAiProgress, usePhotoAi } from '@/components/vehicles/usePhotoAi'
 import PhotoOrderBar, { moveItem } from '@/components/vehicles/PhotoOrderBar'
 import { INVOICE_TYPES, MIN_PHOTOS, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
@@ -58,7 +58,6 @@ export default function PublishPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [images, setImages] = useState<string[]>([])
-  const photoAi = usePhotoAi(images)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -78,8 +77,7 @@ export default function PublishPage() {
     type: ''
   })
 
-  const { data: session, status: sessionStatus } = useSession()
-  const isAdmin = session?.user?.role === 'ADMIN'
+  const { status: sessionStatus } = useSession()
   useEffect(() => {
     if (sessionStatus !== 'unauthenticated') return
     // Justo después de iniciar sesión el estado del cliente puede venir desfasado: se confirma con el servidor
@@ -123,35 +121,6 @@ export default function PublishPage() {
     })
   }
 
-  const compressImage = (file: File, maxWidth = 1920, quality = 0.82): Promise<File> => {
-    return new Promise((resolve) => {
-      const img = new Image()
-      const url = URL.createObjectURL(file)
-      img.onload = () => {
-        URL.revokeObjectURL(url)
-        let { width, height } = img
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width)
-          width = maxWidth
-        }
-        const canvas = document.createElement('canvas')
-        canvas.width = width
-        canvas.height = height
-        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return resolve(file)
-            resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-          },
-          'image/jpeg',
-          quality
-        )
-      }
-      img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
-      img.src = url
-    })
-  }
-
   const handleFiles = async (files: FileList | File[]) => {
     if (!files || (files as FileList).length === 0) return
     setUploading(true)
@@ -163,8 +132,6 @@ export default function PublishPage() {
         const compressed = await compressImage(file)
         const data = new FormData()
         data.append('file', compressed)
-        // Año, marca y modelo para que la IA reconstruya con fidelidad lo que tape un objeto
-        data.append('vehicle', [formData.year, formData.make === '__other__' ? formData.customMake : formData.make, formData.model, formData.version].map((v) => String(v ?? '').trim()).filter(Boolean).join(' '))
         const res = await fetch('/api/upload', { method: 'POST', body: data })
         if (!res.ok) throw new Error('Error al subir imagen')
         const json = await res.json()
@@ -196,7 +163,7 @@ export default function PublishPage() {
       if (!formData.state) {
         throw new Error('Selecciona el estado')
       }
-      if (!isAdmin && images.length < MIN_PHOTOS) {
+      if (images.length < MIN_PHOTOS) {
         throw new Error(`Sube al menos ${MIN_PHOTOS} fotos de tu auto (llevas ${images.length}). Revisa la guía de ángulos.`)
       }
 
@@ -426,11 +393,10 @@ export default function PublishPage() {
                       <div key={url} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={photoAi.photos[url]?.editedUrl ?? url}
+                          src={url}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
-                        {photoAi.enabled && <PhotoAiBadge state={photoAi.photos[url]?.state} />}
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
@@ -455,7 +421,6 @@ export default function PublishPage() {
 
               {/* Submit Button */}
               <div className="pt-4">
-                {photoAi.processing > 0 && <PhotoAiProgress processing={photoAi.processing} total={images.length} />}
                 <Button type="submit" disabled={isSubmitting || uploading} isLoading={isSubmitting} fullWidth>
                   Publicar vehículo
                 </Button>

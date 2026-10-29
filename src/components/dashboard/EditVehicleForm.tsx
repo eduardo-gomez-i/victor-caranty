@@ -11,8 +11,9 @@ import VehicleTypeSelector from '@/components/publish/VehicleTypeSelector'
 import PhotoGuide from '@/components/vehicles/PhotoGuide'
 import GenerateDescriptionButton from '@/components/vehicles/GenerateDescriptionButton'
 import CopyDescriptionButton from '@/components/vehicles/CopyDescriptionButton'
-import { PhotoAiBadge, PhotoAiProgress, usePhotoAi } from '@/components/vehicles/usePhotoAi'
 import PhotoOrderBar, { moveItem } from '@/components/vehicles/PhotoOrderBar'
+import DeleteVehicleButton from '@/components/admin/DeleteVehicleButton'
+import { compressImage } from '@/lib/compress-image'
 import { INVOICE_TYPES, MIN_PHOTOS, TRANSMISSIONS, VEHICLE_BRANDS } from '@/constants/vehicles'
 
 const MEXICO_STATES = [
@@ -66,7 +67,6 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
 
   const sortedImages = [...vehicle.images].sort((a, b) => a.displayOrder - b.displayOrder)
   const [images, setImages] = useState<string[]>(sortedImages.map(i => i.url))
-  const photoAi = usePhotoAi(images)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -74,35 +74,6 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
       const next = { ...prev, [name]: value }
       if (name === 'make' && value !== '__other__') next.customMake = ''
       return next
-    })
-  }
-
-  const compressImage = (file: File, maxWidth = 1920, quality = 0.82): Promise<File> => {
-    return new Promise((resolve) => {
-      const img = new Image()
-      const url = URL.createObjectURL(file)
-      img.onload = () => {
-        URL.revokeObjectURL(url)
-        let { width, height } = img
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width)
-          width = maxWidth
-        }
-        const canvas = document.createElement('canvas')
-        canvas.width = width
-        canvas.height = height
-        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return resolve(file)
-            resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-          },
-          'image/jpeg',
-          quality
-        )
-      }
-      img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
-      img.src = url
     })
   }
 
@@ -117,8 +88,6 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
         const compressed = await compressImage(file)
         const data = new FormData()
         data.append('file', compressed)
-        // Año, marca y modelo para que la IA reconstruya con fidelidad lo que tape un objeto
-        data.append('vehicle', [formData.year, formData.make === '__other__' ? formData.customMake : formData.make, formData.model, formData.version].map((v) => String(v ?? '').trim()).filter(Boolean).join(' '))
         const res = await fetch('/api/upload', { method: 'POST', body: data })
         if (!res.ok) throw new Error('Error al subir imagen')
         const json = await res.json()
@@ -145,7 +114,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
       if (!make) throw new Error('Ingresa la marca')
       if (!formData.state) throw new Error('Selecciona el estado')
       // Anuncios anteriores con menos fotos pueden editarse, pero sin quitar más fotos
-      if (!isAdmin && images.length < MIN_PHOTOS && images.length < sortedImages.length) {
+      if (images.length < MIN_PHOTOS && images.length < sortedImages.length) {
         throw new Error(`El anuncio necesita al menos ${MIN_PHOTOS} fotos.`)
       }
 
@@ -339,8 +308,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
               {images.map((url, index) => (
                 <div key={url} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photoAi.photos[url]?.editedUrl ?? url} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
-                  {photoAi.enabled && <PhotoAiBadge state={photoAi.photos[url]?.state} />}
+                  <img src={url} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
@@ -368,8 +336,6 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
           </div>
         )}
 
-        {photoAi.processing > 0 && <PhotoAiProgress processing={photoAi.processing} total={images.length} />}
-
         <div className="flex gap-3 pt-4">
           <Button
             type="button"
@@ -382,6 +348,15 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
           <Button type="submit" disabled={isSubmitting || uploading} isLoading={isSubmitting} fullWidth>
             Guardar cambios
           </Button>
+        </div>
+
+        <div className="flex justify-end border-t border-gray-100 pt-4">
+          <DeleteVehicleButton
+            vehicleId={vehicle.id}
+            vehicleName={`${vehicle.make} ${vehicle.model} ${vehicle.year}`}
+            redirectTo={isAdmin ? '/admin/vehicles' : '/dashboard'}
+            withLabel
+          />
         </div>
       </div>
     </form>
