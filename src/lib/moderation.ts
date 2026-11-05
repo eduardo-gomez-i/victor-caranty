@@ -46,6 +46,26 @@ const SPAM: { reason: string; test: (text: string) => boolean }[] = [
   },
 ]
 
+// Una línea corta con datos de contacto se quita completa ("Informes al 442…"); en un párrafo largo solo el dato,
+// para no perder el resto de la descripción.
+const MAX_DROPPED_LINE = 140
+
+// Quita los datos de contacto del texto para poder publicar sin que lo apruebe una persona.
+// keepLine: líneas que no se tocan (el pie oficial de EasyMotores).
+export function removeContactInfo(text: string, keepLine: (line: string) => boolean = () => false) {
+  const lines: string[] = []
+  for (const line of text.split(/\r?\n/)) {
+    const found = keepLine(line) ? [] : CHECKS.filter(({ pattern }) => pattern.test(line))
+    if (found.length === 0) {
+      lines.push(line)
+    } else if (line.length > MAX_DROPPED_LINE) {
+      const cleaned = found.reduce((rest, { pattern }) => rest.replace(new RegExp(pattern.source, `${pattern.flags}g`), " "), line)
+      lines.push(cleaned.replace(/ {2,}/g, " ").trim())
+    }
+  }
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim()
+}
+
 export function checkListingText(fields: (string | null | undefined)[]): string[] {
   const text = fields.filter(Boolean).join("\n")
   if (!text.trim()) return []

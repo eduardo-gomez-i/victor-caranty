@@ -5,8 +5,8 @@ export async function notifyAdminsAboutPendingVehicle(args: {
   origin?: string
   // Por qué la publicación automática se detuvo (vacío = revisión normal)
   reasons?: string[]
-  // El vehículo ya se publicó, pero algunas fotos quedaron ocultas hasta que el admin las revise
-  hiddenPhotos?: boolean
+  // El vehículo ya se publicó, pero algunas fotos muy editadas no se muestran hasta que el admin las apruebe
+  photosToApprove?: boolean
   vehicle: {
     id: string
     make: string
@@ -48,12 +48,12 @@ export async function notifyAdminsAboutPendingVehicle(args: {
   const envBaseUrl = process.env.MAILGUN_BASE_URL
   const baseUrl = (envBaseUrl || 'https://api.mailgun.net').replace(/\/+$/, '')
   const name = `${args.vehicle.make} ${args.vehicle.model} ${args.vehicle.year}`
-  const subject = args.hiddenPhotos ? `Fotos ocultas por revisar: ${name}` : `Nuevo vehículo pendiente: ${name}`
-  const intro = args.hiddenPhotos
-    ? 'Se publicó un vehículo, pero algunas fotos quedaron ocultas al público hasta que las revises.'
+  const subject = args.photosToApprove ? `Fotos por aprobar: ${name}` : `Nuevo vehículo pendiente: ${name}`
+  const intro = args.photosToApprove
+    ? 'Se publicó un vehículo, pero algunas fotos muy editadas por la IA no se muestran al público hasta que las apruebes.'
     : 'Se registró un nuevo vehículo y requiere verificación.'
   const origin = (args.origin || process.env.APP_URL || 'https://easymotores.com').replace(/\/+$/, '')
-  const adminUrl = args.hiddenPhotos ? `${origin}/admin/vehicles/${args.vehicle.id}/photos` : `${origin}/admin/vehicles`
+  const adminUrl = args.photosToApprove ? `${origin}/admin/vehicles/${args.vehicle.id}/photos` : `${origin}/admin/vehicles`
   const vehicleUrl = `${origin}/vehicles/${args.vehicle.id}`
   const reasons = args.reasons ?? []
 

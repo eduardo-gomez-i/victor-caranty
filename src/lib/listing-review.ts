@@ -1,21 +1,23 @@
 import { Prisma } from "@prisma/client"
 import prisma from "@/lib/prisma"
-import { checkListingText } from "@/lib/moderation"
+import { checkListingText, removeContactInfo } from "@/lib/moderation"
 import { LISTING_FOOTER } from "@/lib/listing-footer"
 import { notifyAdminsAboutPendingVehicle } from "@/lib/notify-admin"
 import { PHOTO_FLAG_LABELS, parseFlags } from "@/lib/photo-ai/flags"
 import { urlKey } from "@/lib/photo-ai/keys"
 
-// Publicación automática de anuncios:
-// 1. Se revisa el texto al guardar (teléfonos, redes, enlaces, spam); solo para vendedores.
-// 2. Si está limpio, el vehículo queda en "reviewing" (no público) mientras la IA procesa las fotos.
+// Publicación automática de anuncios (el admin solo interviene cuando no hay otra salida):
+// 1. Al guardar, se quitan de la descripción los datos de contacto (teléfonos, redes, enlaces); solo para vendedores.
+// 2. El vehículo queda en "reviewing" (no público) mientras la IA procesa las fotos.
 // 3. Al terminar se publican las fotos editadas y el vehículo pasa a "active". Las fotos que la IA
-//    sabe con certeza que no corresponden (no son del auto) se eliminan; las dudosas o muy editadas
-//    quedan ocultas hasta que un admin las apruebe, y se le avisa por correo.
-// Un texto con alertas, o un anuncio sin ninguna foto publicable, queda en "pending".
+//    sabe con certeza que no corresponden (no son del auto) se eliminan; las dudosas quedan ocultas sin detener
+//    el anuncio ni avisar a nadie (el admin las ve en su tabla si quiere revisarlas). Las muy editadas también
+//    quedan ocultas, pero esas sí se le avisan por correo porque necesitan su aprobación.
+// Solo queda en "pending", y se avisa por correo, si el texto sigue con alertas (spam, contacto en marca o
+// modelo) o si el anuncio no tiene ninguna foto publicable.
 
-// Por encima de este % reconstruido por la IA, la foto la revisa una persona (podría ocultar daños)
-export const AUTO_REVIEW_MAX_REPLACED_PCT = 10
+// Desde este % reconstruido por la IA, la foto necesita la aprobación del admin (podría ocultar daños)
+export const APPROVAL_REPLACED_PCT = 25
 
 interface ListingText {
   make: string
@@ -34,6 +36,11 @@ function withoutOfficialFooter(text?: string | null) {
     .split("\n")
     .filter((line) => !FOOTER_LINES.has(line.trim()))
     .join("\n")
+}
+
+// Descripción del vendedor sin datos de contacto; el pie oficial se conserva
+export function cleanListingDescription(description: string | undefined) {
+  return description && removeContactInfo(description, (line) => FOOTER_LINES.has(line.trim()))
 }
 
 export function listingTextReasons(v: ListingText) {
@@ -73,15 +80,12 @@ function photoProblem(job: Job): string | null {
   if (job.status === "failed") return "no se pudo procesar con IA"
   const flags = parseFlags(job.flags)
   if (flags.length > 0) return flags.map((f) => PHOTO_FLAG_LABELS[f]).join(", ")
-  if (job.status === "ready" && (job.replacedPct ?? 0) > AUTO_REVIEW_MAX_REPLACED_PCT) {
-    return `la IA reconstruyó ${job.replacedPct}% de la foto (revisar que no oculte daños)`
-  }
+  if (needsApproval(job)) return `la IA reconstruyó ${job.replacedPct}% de la foto (revisar que no oculte daños)`
   return null
 }
 
-// Edición que se puede publicar sin que la vea una persona
-export function isSafeEdit(job: Job) {
-  return photoProblem(job) === null
+function needsApproval(job: Job) {
+  return job.status === "ready" && (job.replacedPct ?? 0) >= APPROVAL_REPLACED_PCT
 }
 
 // Aplica el resultado de la IA a las fotos del vehículo: publica las editadas seguras y oculta
@@ -97,6 +101,7 @@ async function syncVehiclePhotos(vehicleId: string) {
   let visible = 0
   let removed = 0
   const reasons: string[] = []
+  const approvals: string[] = []
   for (const [index, image] of images.entries()) {
     const job = jobs.find((j) => j.originalUrl === image.url || j.processedUrl === image.url)
     // Sin trabajo: fotos anteriores al módulo o externas; se publican como están
@@ -119,6 +124,7 @@ async function syncVehiclePhotos(vehicleId: string) {
     const problem = photoProblem(job)
     if (problem) {
       reasons.push(`Foto ${index + 1} (oculta): ${problem}`)
+      if (needsApproval(job)) approvals.push(`Foto ${index + 1}: la IA reconstruyó ${job.replacedPct}% de la foto (revisar que no oculte daños)`)
       if (!image.hidden) await prisma.image.update({ where: { id: image.id }, data: { hidden: true } })
       continue
     }
@@ -133,9 +139,7 @@ async function syncVehiclePhotos(vehicleId: string) {
     }
   }
   if (removed > 0) await renumberImages(vehicleId)
-  // Solo los motivos de fotos ocultas requieren al admin; las eliminadas quedan como registro
-  const needsReview = reasons.some((r) => r.includes("(oculta)"))
-  return { waiting, visible, total: images.length, reasons, needsReview }
+  return { waiting, visible, total: images.length, reasons, approvals }
 }
 
 // Tras eliminar fotos: orden consecutivo y la primera como principal
@@ -149,8 +153,8 @@ async function renumberImages(vehicleId: string) {
 }
 
 // Revisa las fotos del vehículo y, si estaba en revisión automática y ya terminaron todas, lo publica.
-// Las fotos que con certeza no corresponden se eliminan; las dudosas quedan ocultas y se avisa al admin.
-// Si no queda ninguna foto visible, pasa a "pending".
+// Las fotos que con certeza no corresponden se eliminan; las dudosas quedan ocultas.
+// Se avisa al admin si alguna foto necesita su aprobación o si no queda ninguna visible (pasa a "pending").
 export async function finalizeAutoReview(vehicleId: string, origin?: string) {
   const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } })
   if (!vehicle) return
@@ -163,8 +167,9 @@ export async function finalizeAutoReview(vehicleId: string, origin?: string) {
     where: { id: vehicleId, status: "reviewing" },
     data: { status, moderationFlags: photos.reasons.length > 0 ? photos.reasons : Prisma.DbNull },
   })
-  if (claimed.count === 0 || (!photos.needsReview && status === "active")) return
-  await notify({ ...vehicle, status }, photos.reasons, origin, status === "active")
+  if (claimed.count === 0) return
+  if (status === "pending") await notify({ ...vehicle, status }, photos.reasons, origin)
+  else if (photos.approvals.length > 0) await notify({ ...vehicle, status }, photos.approvals, origin, true)
 }
 
 // El admin aprueba el anuncio completo: sus fotos ocultas se publican (la versión editada si existe).
@@ -199,13 +204,13 @@ async function notify(
   vehicle: { id: string; make: string; model: string; year: number; mileage: number; price: unknown; state: string | null; status: string; userId: string },
   reasons: string[],
   origin?: string,
-  hiddenPhotos = false
+  photosToApprove = false
 ) {
   try {
     await notifyAdminsAboutPendingVehicle({
       origin,
       reasons,
-      hiddenPhotos,
+      photosToApprove,
       vehicle: {
         id: vehicle.id,
         make: vehicle.make,

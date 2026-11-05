@@ -107,7 +107,7 @@ export default async function VehicleDetail({ params }: Props) {
             <div>
               <h3 className="text-yellow-800 font-medium">Vehículo en revisión</h3>
               <p className="text-yellow-700 text-sm mt-1">
-                Encontramos algo que un administrador debe revisar (por ejemplo, datos de contacto, enlaces o redes sociales en la descripción o en las fotos). Por ahora solo lo ves tú y los administradores; una vez aprobado será visible para todo el público.
+                Encontramos algo que un administrador debe revisar. Por ahora solo lo ves tú y los administradores; una vez aprobado será visible para todo el público.
               </p>
             </div>
           </div>

@@ -326,7 +326,7 @@ export default function EditVehicleForm({ vehicle, isAdmin }: { vehicle: Vehicle
 
         {!isAdmin && (
           <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md text-sm">
-            Al guardar los cambios revisaremos el anuncio y las fotos. Si todo está en orden se publica automáticamente en unos minutos; si encontramos datos de contacto o enlaces lo revisará un administrador, y las fotos fuera de lugar se ocultan hasta que las apruebe.
+            Al guardar, tu anuncio se publica automáticamente en unos minutos. Los teléfonos, correos, enlaces y redes sociales se quitan de la descripción, y las fotos fuera de lugar no se muestran.
           </div>
         )}
 

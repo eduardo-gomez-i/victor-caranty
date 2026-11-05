@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 import { z } from "zod"
 import { Prisma } from "@prisma/client"
 import { enqueuePhotos, photoAiEnabled } from "@/lib/photo-ai/worker"
-import { afterListingSaved, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
+import { afterListingSaved, cleanListingDescription, initialListingStatus, listingTextReasons } from "@/lib/listing-review"
 import { saveVerifiedSpecFromVehicle } from "@/lib/vehicle-specs"
 import { MIN_PHOTOS } from "@/constants/vehicles"
 import { deletePhotoFiles } from "@/lib/vehicle-files"
@@ -74,6 +74,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
     // Texto (solo vendedor) y fotos pasan por la revisión automática; no es público hasta que terminen las fotos
     const isAdmin = session.user.role === "ADMIN"
+    const description = isAdmin ? data.description : cleanListingDescription(data.description)
     const review =
       isFullEdit
         ? initialListingStatus(
@@ -81,7 +82,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
               make: data.make ?? existing.make,
               model: data.model ?? existing.model,
               version: data.version !== undefined ? data.version : existing.version,
-              description: data.description !== undefined ? data.description : existing.description,
+              description: description !== undefined ? description : existing.description,
             }),
             data.images?.length ?? (await prisma.image.count({ where: { vehicleId: id } })),
             photoAiEnabled(),
@@ -102,7 +103,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         ...(data.year !== undefined && { year: data.year }),
         ...(data.mileage !== undefined && { mileage: data.mileage }),
         ...(data.price !== undefined && { price: data.price }),
-        ...(data.description !== undefined && { description: data.description }),
+        ...(description !== undefined && { description }),
         ...(data.type !== undefined && { type: data.type }),
         ...(data.state !== undefined && { state: data.state }),
         ...(data.location !== undefined && { location: data.location }),
