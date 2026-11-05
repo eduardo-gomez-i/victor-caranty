@@ -77,7 +77,8 @@ export default function PublishPage() {
     type: ''
   })
 
-  const { status: sessionStatus } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
+  const isAdmin = session?.user?.role === 'ADMIN'
   useEffect(() => {
     if (sessionStatus !== 'unauthenticated') return
     // Justo después de iniciar sesión el estado del cliente puede venir desfasado: se confirma con el servidor
@@ -321,7 +322,7 @@ export default function PublishPage() {
                         onChange={handleChange}
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Puedes revisar y editar el texto antes de guardar. No incluyas teléfonos, correos, enlaces ni redes sociales: se quitan automáticamente al publicar. &quot;Copiar descripción&quot; incluye el pie de EasyMotores para pegarlo en Marketplace u otras redes.
+                        Puedes revisar y editar el texto antes de guardar. {!isAdmin && 'No incluyas teléfonos, correos, enlaces ni redes sociales: se quitan automáticamente al publicar. '}&quot;Copiar descripción&quot; incluye el pie de EasyMotores para pegarlo en Marketplace u otras redes.
                       </p>
                     </div>
                   </div>

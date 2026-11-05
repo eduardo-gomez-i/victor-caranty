@@ -1,6 +1,20 @@
 // Revisión automática del texto de un anuncio. Si encuentra algo, la publicación pasa a revisión del admin.
 // Busca datos de contacto que saquen la venta de la plataforma (teléfonos, correos, enlaces, redes) y spam.
 
+const SOCIAL =
+  /\b(?:whats\s?app|whatsapp|whats|wats|wpp|wa\.me|watsap|guasap|telegram|t\.me|facebook|fb\.com|face|instagram|insta|ig|tiktok|tik tok|messenger|inbox|dm|signal|snapchat|twitter)\b/i
+
+// La marca propia siempre se permite: sitio, correo y usuario de EasyMotores (easymotores.com, @easymotores…)
+const OWN_BRAND = /(?:https?:\/\/)?(?:www\.)?(?:[\w.+-]*@\s*)?easy[\s_.-]?motores(?:\.com)?(?:\.mx)?(?:\/\S*)?/i
+const OWN_BRAND_ALL = new RegExp(OWN_BRAND.source, "gi")
+const SOCIAL_ALL = new RegExp(SOCIAL.source, "gi")
+
+// Lo que se revisa de una línea: sin la marca propia ni las redes que la acompañan ("Facebook: @easymotores").
+// Un teléfono u otro sitio en esa misma línea se sigue detectando.
+function withoutOwnBrand(line: string) {
+  return OWN_BRAND.test(line) ? line.replace(OWN_BRAND_ALL, " ").replace(SOCIAL_ALL, " ") : line
+}
+
 const CHECKS: { reason: string; pattern: RegExp }[] = [
   {
     reason: "Número de teléfono",
@@ -13,11 +27,7 @@ const CHECKS: { reason: string; pattern: RegExp }[] = [
     reason: "Enlace a sitio web",
     pattern: /\b(?:https?:\/\/|www\.)\S+|\b[\w-]+\.(?:com|mx|net|org|info|site|online|store|shop|link|ly|me)(?:\.[a-z]{2})?\b(?:\/\S*)?/i,
   },
-  {
-    reason: "Redes sociales o mensajería",
-    pattern:
-      /\b(?:whats\s?app|whatsapp|whats|wats|wpp|wa\.me|watsap|guasap|telegram|t\.me|facebook|fb\.com|face|instagram|insta|ig|tiktok|tik tok|messenger|inbox|dm|signal|snapchat|twitter)\b/i,
-  },
+  { reason: "Redes sociales o mensajería", pattern: SOCIAL },
   { reason: "Usuario de redes (@)", pattern: /(?:^|\s)@[a-z0-9_.]{3,}/i },
   {
     reason: "Invitación a contactar fuera de la plataforma",
@@ -55,11 +65,16 @@ const MAX_DROPPED_LINE = 140
 export function removeContactInfo(text: string, keepLine: (line: string) => boolean = () => false) {
   const lines: string[] = []
   for (const line of text.split(/\r?\n/)) {
-    const found = keepLine(line) ? [] : CHECKS.filter(({ pattern }) => pattern.test(line))
+    const reviewed = withoutOwnBrand(line)
+    const found = keepLine(line) ? [] : CHECKS.filter(({ pattern }) => pattern.test(reviewed))
     if (found.length === 0) {
       lines.push(line)
     } else if (line.length > MAX_DROPPED_LINE) {
-      const cleaned = found.reduce((rest, { pattern }) => rest.replace(new RegExp(pattern.source, `${pattern.flags}g`), " "), line)
+      const cleaned = found.reduce(
+        (rest, { pattern }) =>
+          rest.replace(new RegExp(pattern.source, `${pattern.flags}g`), (match) => (OWN_BRAND.test(match) ? match : " ")),
+        line
+      )
       lines.push(cleaned.replace(/ {2,}/g, " ").trim())
     }
   }
@@ -69,8 +84,9 @@ export function removeContactInfo(text: string, keepLine: (line: string) => bool
 export function checkListingText(fields: (string | null | undefined)[]): string[] {
   const text = fields.filter(Boolean).join("\n")
   if (!text.trim()) return []
+  const reviewed = text.split("\n").map(withoutOwnBrand).join("\n")
   const reasons = new Set<string>()
-  for (const { reason, pattern } of CHECKS) if (pattern.test(text)) reasons.add(reason)
+  for (const { reason, pattern } of CHECKS) if (pattern.test(reviewed)) reasons.add(reason)
   for (const { reason, test } of SPAM) if (test(text)) reasons.add(reason)
   return [...reasons]
 }

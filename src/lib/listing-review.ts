@@ -15,6 +15,7 @@ import { urlKey } from "@/lib/photo-ai/keys"
 //    quedan ocultas, pero esas sí se le avisan por correo porque necesitan su aprobación.
 // Solo queda en "pending", y se avisa por correo, si el texto sigue con alertas (spam, contacto en marca o
 // modelo) o si el anuncio no tiene ninguna foto publicable.
+// Estas reglas son para los vendedores: los anuncios del admin no pasan por ellas, solo por la edición de las fotos.
 
 // Desde este % reconstruido por la IA, la foto necesita la aprobación del admin (podría ocultar daños)
 export const APPROVAL_REPLACED_PCT = 25
@@ -74,10 +75,13 @@ export async function afterListingSaved(vehicleId: string, reasons: string[], or
 type Job = Awaited<ReturnType<typeof prisma.photoJob.findMany>>[number]
 
 // Por qué una foto no debe verse sin que la apruebe un admin (null = se puede publicar)
-function photoProblem(job: Job): string | null {
+function photoProblem(job: Job, ownerIsAdmin: boolean): string | null {
   // El admin ya decidió: aprobó la editada o eligió publicar la original
   if (job.status === "approved" || job.status === "original") return null
+  // Sin procesar, la placa real quedaría a la vista: tampoco se publica en los anuncios del admin
   if (job.status === "failed") return "no se pudo procesar con IA"
+  // Las reglas de contenido son para los vendedores: el admin publica lo que decida
+  if (ownerIsAdmin) return null
   const flags = parseFlags(job.flags)
   if (flags.length > 0) return flags.map((f) => PHOTO_FLAG_LABELS[f]).join(", ")
   if (needsApproval(job)) return `la IA reconstruyó ${job.replacedPct}% de la foto (revisar que no oculte daños)`
@@ -97,6 +101,9 @@ async function syncVehiclePhotos(vehicleId: string) {
     where: { OR: [{ urlKey: { in: urls.map(urlKey) } }, { processedUrl: { in: urls } }] },
   })
 
+  const owner = await prisma.vehicle.findUnique({ where: { id: vehicleId }, select: { user: { select: { role: true } } } })
+  const ownerIsAdmin = owner?.user.role === "ADMIN"
+
   let waiting = false
   let visible = 0
   let removed = 0
@@ -114,14 +121,14 @@ async function syncVehiclePhotos(vehicleId: string) {
       continue
     }
     // La IA está segura de que no corresponde al anuncio: se elimina sin pasar por el admin
-    if (job.status === "discarded") {
+    if (job.status === "discarded" && !ownerIsAdmin) {
       const flags = parseFlags(job.flags).map((f) => PHOTO_FLAG_LABELS[f]).join(", ")
       reasons.push(`Foto ${index + 1} eliminada: ${flags || "no corresponde al anuncio"}`)
       await prisma.image.delete({ where: { id: image.id } })
       removed++
       continue
     }
-    const problem = photoProblem(job)
+    const problem = photoProblem(job, ownerIsAdmin)
     if (problem) {
       reasons.push(`Foto ${index + 1} (oculta): ${problem}`)
       if (needsApproval(job)) approvals.push(`Foto ${index + 1}: la IA reconstruyó ${job.replacedPct}% de la foto (revisar que no oculte daños)`)
